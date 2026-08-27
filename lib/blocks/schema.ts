@@ -99,7 +99,7 @@ export const dressCodeContentSchema = z.object({
 });
 
 export const galleryContentSchema = z.object({
-  photos: z.array(httpUrlSchema).max(20, "Не более 20 фото").default([]),
+  photos: z.array(httpUrlSchema).max(8, "Не более 8 фото").default([]),
 });
 
 export const wishesContentSchema = z.object({

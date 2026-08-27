@@ -72,7 +72,9 @@ export function PhotoGrid({
   );
 }
 
-function isRenderableUrl(src: string): boolean {
+// Exported so consumers rendering photos outside PhotoGrid itself (e.g. the
+// gallery block's own variable-count grid) can apply the same guard.
+export function isRenderableUrl(src: string): boolean {
   // A controlled input feeding this straight into next/image (e.g. the
   // configurator's live-editing photo fields) produces an invalid,
   // in-progress URL on every keystroke until typing finishes — next/image

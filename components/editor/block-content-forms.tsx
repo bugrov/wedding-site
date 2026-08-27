@@ -56,7 +56,7 @@ function PhotoThumbnail({
 }
 
 const photoUrlFailHint =
-  "Не удалось загрузить изображение по этой ссылке — нужна прямая ссылка на файл, а не на страницу сайта (например, правой кнопкой на фото → «Копировать адрес изображения»).";
+  "Нужна прямая ссылка на файл — правой кнопкой на фото → «Копировать адрес изображения».";
 
 function PhotoUrlField({
   label,
@@ -152,25 +152,13 @@ export function StoryForm({
         <label className="block text-sm font-medium">Фото (до 2, необязательно)</label>
         <div className="mt-2 space-y-2">
           {photos.map((photo, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input
-                value={photo}
-                onChange={(e) => updatePhoto(i, e.target.value)}
-                placeholder="https://..."
-                className={fieldClassName}
-              />
-              {photo && <PhotoThumbnail key={photo} src={photo} />}
-              <button
-                type="button"
-                onClick={() => removePhoto(i)}
-                aria-label="Удалить фото"
-                className={removeButtonClassName}
-              >
-                <Trash2 className="h-4 w-4" aria-hidden />
-              </button>
-            </div>
+            <PhotoRow
+              key={i}
+              photo={photo}
+              onChange={(url) => updatePhoto(i, url)}
+              onRemove={() => removePhoto(i)}
+            />
           ))}
-          {photos.length > 0 && <p className="text-xs text-black/40">{photoUrlFailHint}</p>}
           {photos.length < 2 && (
             <button type="button" onClick={addPhoto} className={`${addButtonClassName} w-full`}>
               <Plus className="h-4 w-4" aria-hidden />
@@ -376,7 +364,7 @@ export function DressCodeForm({
   );
 }
 
-function GalleryPhotoRow({
+function PhotoRow({
   photo,
   onChange,
   onRemove,
@@ -429,24 +417,26 @@ export function GalleryForm({
   };
 
   const addPhoto = () => {
-    if (photos.length >= 20) return;
+    if (photos.length >= 8) return;
     onChange({ photos: [...photos, ""] });
   };
 
   return (
     <div className="space-y-2">
       {photos.map((photo, i) => (
-        <GalleryPhotoRow
+        <PhotoRow
           key={i}
           photo={photo}
           onChange={(url) => updatePhoto(i, url)}
           onRemove={() => removePhoto(i)}
         />
       ))}
-      <button type="button" onClick={addPhoto} className={`${addButtonClassName} w-full`}>
-        <Plus className="h-4 w-4" aria-hidden />
-        Добавить фото
-      </button>
+      {photos.length < 8 && (
+        <button type="button" onClick={addPhoto} className={`${addButtonClassName} w-full`}>
+          <Plus className="h-4 w-4" aria-hidden />
+          Добавить фото
+        </button>
+      )}
     </div>
   );
 }

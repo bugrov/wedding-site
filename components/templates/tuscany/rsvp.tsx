@@ -100,6 +100,17 @@ export function TuscanyRsvp({ content, previewMode }: BlockProps<"rsvp">) {
 
         {attending === "yes" && (
           <>
+            {/* Right after the yes/no question — higher priority than
+                food/drink/headcount per feedback. */}
+            {content.askPlusOne && (
+              <div>
+                <label className="block text-sm font-medium" htmlFor="rsvp-plusone">
+                  Имя пары (+1), если будет
+                </label>
+                <input id="rsvp-plusone" {...register("plusOne")} className={inputClassName} />
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium" htmlFor="rsvp-headcount">
                 Сколько человек (с вами)
@@ -132,15 +143,6 @@ export function TuscanyRsvp({ content, previewMode }: BlockProps<"rsvp">) {
                   Пожелания по напиткам
                 </label>
                 <input id="rsvp-drink" {...register("drink")} className={inputClassName} />
-              </div>
-            )}
-
-            {content.askPlusOne && (
-              <div>
-                <label className="block text-sm font-medium" htmlFor="rsvp-plusone">
-                  Имя пары (+1), если будет
-                </label>
-                <input id="rsvp-plusone" {...register("plusOne")} className={inputClassName} />
               </div>
             )}
           </>

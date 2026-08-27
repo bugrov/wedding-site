@@ -40,4 +40,10 @@ export type TemplateDefinition = {
   blocks: { [K in BlockType]: ComponentType<BlockProps<K>> };
   /** Applies this template's fonts + the given color tokens as CSS vars. */
   ThemeWrapper: ComponentType<{ colorTokens?: ColorTokens; children: ReactNode }>;
+  /** This template's default palette — used for the swatch preview in the
+   * template picker (see components/landing/examples.tsx for the same
+   * swatch idea applied to not-yet-built directions). Real per-project theme
+   * selection (step 6) will let the operator override this from a saved
+   * Theme row instead. */
+  defaultColorTokens: ColorTokens;
 };

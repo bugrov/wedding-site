@@ -214,22 +214,37 @@ export function BlockSettingsDrawer({
           <div>
             <h3 className="text-sm font-semibold tracking-wide uppercase">Шаблон</h3>
             <div className="mt-3 space-y-2">
-              {TEMPLATE_IDS.map((id) => (
-                <label
-                  key={id}
-                  className="flex min-h-11 cursor-pointer items-center rounded-sm border border-black/20 px-4 py-2 text-sm has-checked:border-(--color-primary) has-checked:bg-(--color-primary)/5"
-                >
-                  <input
-                    type="radio"
-                    name="templateId"
-                    value={id}
-                    checked={templateId === id}
-                    onChange={() => onTemplateChange(id)}
-                    className="sr-only"
-                  />
-                  {TEMPLATES[id].label}
-                </label>
-              ))}
+              {TEMPLATE_IDS.map((id) => {
+                const { primary, accent, background } = TEMPLATES[id].defaultColorTokens;
+                return (
+                  <label
+                    key={id}
+                    className="flex min-h-11 cursor-pointer items-center gap-3 rounded-sm border border-black/20 px-4 py-2 text-sm has-checked:border-(--color-primary) has-checked:bg-(--color-primary)/5"
+                  >
+                    <input
+                      type="radio"
+                      name="templateId"
+                      value={id}
+                      checked={templateId === id}
+                      onChange={() => onTemplateChange(id)}
+                      className="sr-only"
+                    />
+                    {/* Same swatch idea as the landing page's "Направления
+                        дизайна" section — a quick visual fingerprint of the
+                        template's palette, not just its name. */}
+                    <span className="flex gap-1">
+                      {[primary, accent, background].map((color, i) => (
+                        <span
+                          key={i}
+                          className="h-4 w-4 rounded-full border border-black/10"
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </span>
+                    {TEMPLATES[id].label}
+                  </label>
+                );
+              })}
             </div>
           </div>
 

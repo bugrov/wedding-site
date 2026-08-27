@@ -1,5 +1,5 @@
 import type { TemplateDefinition } from "@/lib/templates/types";
-import { TuscanyThemeWrapper } from "./theme";
+import { TuscanyThemeWrapper, TUSCANY_DEFAULT_COLORS } from "./theme";
 import { TuscanyCover } from "./cover";
 import { TuscanyTimer } from "./timer";
 import { TuscanyStory } from "./story";
@@ -15,6 +15,7 @@ export const tuscanyTemplate: TemplateDefinition = {
   id: "tuscany",
   label: "Тоскана",
   ThemeWrapper: TuscanyThemeWrapper,
+  defaultColorTokens: TUSCANY_DEFAULT_COLORS,
   Cover: TuscanyCover,
   blocks: {
     timer: TuscanyTimer,
