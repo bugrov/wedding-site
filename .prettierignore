@@ -1,0 +1,7 @@
+.claude
+.agents
+.windsurf
+node_modules
+.next
+app/generated
+package-lock.json

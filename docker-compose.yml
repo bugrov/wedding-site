@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wedding
+      POSTGRES_PASSWORD: wedding_dev_password
+      POSTGRES_DB: wedding
+    ports:
+      # Host port 5433, not 5432 — this machine already has a native Windows
+      # Postgres service bound to 5432, which silently intercepted connections
+      # meant for this container (same host port, different server/credentials).
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wedding"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Prod-like build of the app. For local development, prefer running
+  # `docker compose up db` and `npm run dev` on the host for hot reload —
+  # this service is for testing the production build and for the VPS deploy.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://wedding:wedding_dev_password@db:5432/wedding?schema=public
+      NODE_ENV: production
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:
