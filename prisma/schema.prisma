@@ -60,6 +60,7 @@ model Lead {
   status       LeadStatus @default(NEW)
   project      Project?
 
+  @@index([themeId])
   @@map("leads")
 }
 
@@ -94,6 +95,7 @@ model Project {
   guests            Guest[]
   rsvpResponses     RsvpResponse[]
 
+  @@index([themeId])
   @@map("projects")
 }
 
@@ -119,6 +121,7 @@ model Guest {
   personalLinkToken String?        @unique @map("personal_link_token")
   rsvpResponses     RsvpResponse[]
 
+  @@index([projectId])
   @@map("guests")
 }
 
@@ -135,5 +138,7 @@ model RsvpResponse {
   comment   String?
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@index([projectId])
+  @@index([guestId])
   @@map("rsvp_responses")
 }
