@@ -1,3 +1,5 @@
+import { config } from "dotenv";
+config({ override: true }); // some shells on this machine pre-set an empty DATABASE_URL
 import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "../lib/auth/password";
