@@ -12,7 +12,7 @@ import { TuscanyRsvp } from "./rsvp";
 
 export const tuscanyTemplate: TemplateDefinition = {
   id: "tuscany",
-  label: "Tuscany",
+  label: "Тоскана",
   ThemeWrapper: TuscanyThemeWrapper,
   Cover: TuscanyCover,
   blocks: {
