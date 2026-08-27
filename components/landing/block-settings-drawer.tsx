@@ -12,6 +12,7 @@ import {
 } from "@/lib/blocks";
 import { TEMPLATES, TEMPLATE_IDS } from "@/lib/templates/registry";
 import {
+  fieldClassName,
   CoverForm,
   StoryForm,
   ScheduleForm,
@@ -22,6 +23,8 @@ import {
   RsvpForm,
   FeaturesForm,
 } from "@/components/editor/block-content-forms";
+
+type MainFieldErrors = { groomName?: string; brideName?: string; weddingDate?: string };
 
 function BlockForm({
   type,
@@ -72,6 +75,13 @@ export function BlockSettingsDrawer({
   onContentChange,
   features,
   onFeaturesChange,
+  groomName,
+  onGroomNameChange,
+  brideName,
+  onBrideNameChange,
+  weddingDate,
+  onWeddingDateChange,
+  mainFieldErrors,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -85,6 +95,13 @@ export function BlockSettingsDrawer({
   onContentChange: <K extends BlockType>(type: K, next: BlockContent<K>) => void;
   features: BlockFeatures;
   onFeaturesChange: (next: BlockFeatures) => void;
+  groomName: string;
+  onGroomNameChange: (next: string) => void;
+  brideName: string;
+  onBrideNameChange: (next: string) => void;
+  weddingDate: string;
+  onWeddingDateChange: (next: string) => void;
+  mainFieldErrors: MainFieldErrors;
 }) {
   const [expandedBlock, setExpandedBlock] = useState<BlockType | null>(null);
 
@@ -99,15 +116,23 @@ export function BlockSettingsDrawer({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => onOpenChange(true)}
-        aria-label="Настроить блоки"
-        className="fixed top-24 right-5 z-40 flex items-center gap-2 rounded-full bg-(--color-primary) px-4 py-3 text-sm font-medium text-(--color-background) shadow-lg transition hover:opacity-90"
-      >
-        <SlidersHorizontal className="h-4 w-4" aria-hidden />
-        Настроить блоки
-      </button>
+      {/* Sticky, not fixed to the viewport — a fixed button stayed glued to
+          the top-right corner the whole time, clashing with the header's own
+          "Оставить заявку" button up there (see feedback). Sticky only
+          engages once this point in the page scrolls into that position, and
+          releases once its container (the full-page preview below it)
+          scrolls past — never competing with the header. */}
+      <div className="sticky top-20 z-40 mx-auto flex w-full max-w-5xl justify-end px-6">
+        <button
+          type="button"
+          onClick={() => onOpenChange(true)}
+          aria-label="Настроить блоки"
+          className="flex items-center gap-2 rounded-full bg-(--color-primary) px-4 py-3 text-sm font-medium text-(--color-background) shadow-lg transition hover:opacity-90"
+        >
+          <SlidersHorizontal className="h-4 w-4" aria-hidden />
+          Настроить блоки
+        </button>
+      </div>
 
       {open && (
         <div
@@ -138,6 +163,48 @@ export function BlockSettingsDrawer({
         </div>
 
         <div className="space-y-8 px-6 py-6">
+          <div>
+            <h3 className="text-sm font-semibold tracking-wide uppercase">Основное</h3>
+            <div className="mt-3 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium">Имя жениха</label>
+                  <input
+                    value={groomName}
+                    onChange={(e) => onGroomNameChange(e.target.value)}
+                    className={fieldClassName}
+                  />
+                  {mainFieldErrors.groomName && (
+                    <p className="mt-1 text-xs text-red-600">{mainFieldErrors.groomName}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Имя невесты</label>
+                  <input
+                    value={brideName}
+                    onChange={(e) => onBrideNameChange(e.target.value)}
+                    className={fieldClassName}
+                  />
+                  {mainFieldErrors.brideName && (
+                    <p className="mt-1 text-xs text-red-600">{mainFieldErrors.brideName}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Дата свадьбы</label>
+                <input
+                  type="date"
+                  value={weddingDate}
+                  onChange={(e) => onWeddingDateChange(e.target.value)}
+                  className={fieldClassName}
+                />
+                {mainFieldErrors.weddingDate && (
+                  <p className="mt-1 text-xs text-red-600">{mainFieldErrors.weddingDate}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div>
             <h3 className="text-sm font-semibold tracking-wide uppercase">Шаблон</h3>
             <div className="mt-3 space-y-2">

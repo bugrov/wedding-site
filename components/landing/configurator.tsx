@@ -22,24 +22,31 @@ import { leadSchema } from "@/lib/schemas/lead";
 import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primitives";
 import { BlockSettingsDrawer } from "./block-settings-drawer";
 
-// A generic example couple for the live preview — not real data, just
-// enough for the configurator to show the actual block components (not a
-// separate mockup) reacting to the visitor's checkbox choices.
-const PREVIEW_PROJECT = {
-  groomName: "Александр",
-  brideName: "Ольга",
-  weddingDate: new Date(new Date().getFullYear() + 1, 5, 15),
-};
+// Fallback demo names/date for the live preview when the visitor hasn't
+// typed their own yet — as soon as they do (moved into the settings drawer,
+// not the bottom contact form, per feedback: "приходится листать вниз" and
+// the template previously showed hardcoded names disconnected from any
+// field), the preview (and the Timer block, via project.weddingDate) picks
+// them up immediately.
+const FALLBACK_GROOM_NAME = "Александр";
+const FALLBACK_BRIDE_NAME = "Ольга";
+const FALLBACK_WEDDING_DATE = new Date(new Date().getFullYear() + 1, 5, 15);
 
-// Not leadSchema.omit(...) directly: leadSchema.weddingDate is z.coerce.date()
-// (input unknown -> output Date), which fights useForm<T>'s resolver typing
-// the same way it did in rsvp.tsx. Plain string here, matching the native
-// date input's actual value type — the server (leadSchema) does the real
-// coercion when this hits /api/leads.
-const contactFormSchema = leadSchema
-  .omit({ templateId: true, blocksConfig: true, weddingDate: true })
-  .extend({ weddingDate: z.string().min(1, "Укажите дату свадьбы") });
+// groomName/brideName/weddingDate are handled as their own state (see above)
+// rather than react-hook-form fields here — omitted from this schema too.
+// weddingDate elsewhere would be leadSchema's z.coerce.date() (input unknown
+// -> output Date), which fights useForm<T>'s resolver typing the same way
+// it did in rsvp.tsx.
+const contactFormSchema = leadSchema.omit({
+  templateId: true,
+  blocksConfig: true,
+  groomName: true,
+  brideName: true,
+  weddingDate: true,
+});
 type ContactFormValues = z.infer<typeof contactFormSchema>;
+
+type MainFieldErrors = { groomName?: string; brideName?: string; weddingDate?: string };
 
 const fieldClassName =
   "mt-1 min-h-11 w-full rounded-sm border border-black/35 bg-white px-3 py-2 text-sm text-black";
@@ -49,6 +56,10 @@ export function Configurator() {
   const [templateId, setTemplateId] = useState(TEMPLATE_IDS[0]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [coverContent, setCoverContent] = useState<CoverContent>({});
+  const [groomName, setGroomName] = useState("");
+  const [brideName, setBrideName] = useState("");
+  const [weddingDate, setWeddingDate] = useState("");
+  const [mainFieldErrors, setMainFieldErrors] = useState<MainFieldErrors>({});
   // Content for every block type is always kept in state (not just enabled
   // ones) so toggling a block off and back on doesn't discard what the
   // visitor already typed in it.
@@ -73,6 +84,19 @@ export function Configurator() {
     return { enabledBlocks, order, cover: coverContent, content: filteredContent, features };
   }, [enabledBlocks, coverContent, content, features]);
 
+  const parsedWeddingDate = new Date(weddingDate);
+  const previewProject = useMemo(
+    () => ({
+      groomName: groomName.trim() || FALLBACK_GROOM_NAME,
+      brideName: brideName.trim() || FALLBACK_BRIDE_NAME,
+      weddingDate: Number.isNaN(parsedWeddingDate.getTime())
+        ? FALLBACK_WEDDING_DATE
+        : parsedWeddingDate,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [groomName, brideName, weddingDate],
+  );
+
   const toggleBlock = (type: BlockType) => {
     setEnabledBlocks((current) =>
       current.includes(type) ? current.filter((b) => b !== type) : [...current, type],
@@ -83,11 +107,37 @@ export function Configurator() {
     setContent((current) => ({ ...current, [type]: next }));
   };
 
+  const validateMainFields = (): MainFieldErrors => {
+    const nextErrors: MainFieldErrors = {};
+    if (!groomName.trim()) nextErrors.groomName = "Введите имя жениха";
+    if (!brideName.trim()) nextErrors.brideName = "Введите имя невесты";
+    if (!weddingDate || Number.isNaN(new Date(weddingDate).getTime())) {
+      nextErrors.weddingDate = "Укажите дату свадьбы";
+    }
+    return nextErrors;
+  };
+
   const onSubmit = async (data: ContactFormValues) => {
+    const nextMainErrors = validateMainFields();
+    if (Object.keys(nextMainErrors).length > 0) {
+      setMainFieldErrors(nextMainErrors);
+      setDrawerOpen(true);
+      toast.error("Заполните имена и дату свадьбы в настройках сайта");
+      return;
+    }
+    setMainFieldErrors({});
+
     const res = await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, templateId, blocksConfig }),
+      body: JSON.stringify({
+        ...data,
+        groomName,
+        brideName,
+        weddingDate,
+        templateId,
+        blocksConfig,
+      }),
     });
 
     if (!res.ok) {
@@ -97,6 +147,9 @@ export function Configurator() {
 
     toast.success("Заявка принята! Мы свяжемся с вами в Telegram или по телефону.");
     reset();
+    setGroomName("");
+    setBrideName("");
+    setWeddingDate("");
   };
 
   return (
@@ -107,8 +160,8 @@ export function Configurator() {
           Соберите свой сайт
         </DisplayHeading>
         <BodyText className="mx-auto mt-4 max-w-lg">
-          Ниже — предпросмотр настоящего сайта. Нажмите «Настроить блоки», чтобы включать и
-          выключать разделы.
+          Ниже — предпросмотр настоящего сайта. Нажмите «Настроить блоки», чтобы указать имена, дату
+          и выбрать разделы.
         </BodyText>
       </Section>
 
@@ -125,6 +178,13 @@ export function Configurator() {
         onContentChange={updateContent}
         features={features}
         onFeaturesChange={setFeatures}
+        groomName={groomName}
+        onGroomNameChange={setGroomName}
+        brideName={brideName}
+        onBrideNameChange={setBrideName}
+        weddingDate={weddingDate}
+        onWeddingDateChange={setWeddingDate}
+        mainFieldErrors={mainFieldErrors}
       />
 
       {/* Full-page site preview — the real PageRenderer output at its
@@ -134,7 +194,7 @@ export function Configurator() {
       <div className="border-y border-black/10">
         <PageRenderer
           templateId={templateId}
-          project={PREVIEW_PROJECT}
+          project={previewProject}
           blocksConfig={blocksConfig}
         />
       </div>
@@ -156,42 +216,6 @@ export function Configurator() {
             <input id="contactName" {...register("contactName")} className={fieldClassName} />
             {errors.contactName && (
               <p className="mt-1 text-sm text-red-600">{errors.contactName.message}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium" htmlFor="groomName">
-                Имя жениха
-              </label>
-              <input id="groomName" {...register("groomName")} className={fieldClassName} />
-              {errors.groomName && (
-                <p className="mt-1 text-sm text-red-600">{errors.groomName.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium" htmlFor="brideName">
-                Имя невесты
-              </label>
-              <input id="brideName" {...register("brideName")} className={fieldClassName} />
-              {errors.brideName && (
-                <p className="mt-1 text-sm text-red-600">{errors.brideName.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium" htmlFor="weddingDate">
-              Дата свадьбы
-            </label>
-            <input
-              id="weddingDate"
-              type="date"
-              {...register("weddingDate")}
-              className={fieldClassName}
-            />
-            {errors.weddingDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.weddingDate.message}</p>
             )}
           </div>
 
