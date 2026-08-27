@@ -26,7 +26,7 @@ export function MusicToggle({ src, className }: { src: string; className?: strin
     audio.muted = true;
     audio.play().catch(() => {});
 
-    const events = ["click", "touchstart", "scroll", "keydown"] as const;
+    const events = ["click", "touchstart", "keydown"] as const;
     const unmuteOnFirstInteraction = () => {
       audio.muted = false;
       audio.play().catch(() => {});
@@ -54,7 +54,7 @@ export function MusicToggle({ src, className }: { src: string; className?: strin
 
   return (
     <>
-      <audio ref={audioRef} src={src} loop preload="auto" />
+      <audio ref={audioRef} src={src} loop preload="none" />
       <button
         type="button"
         onClick={toggle}

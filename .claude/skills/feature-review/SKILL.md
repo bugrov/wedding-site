@@ -12,7 +12,7 @@ This project (wedding site builder) is built in stages: one feature-sized unit o
 ## Steps
 
 ### 1. Code review
-Invoke `/code-review` against the current uncommitted diff for this feature. Carry its findings into the final report — correctness bugs, security issues, and reuse/simplification opportunities.
+Run the `/code-review-expert` skill against the current uncommitted diff for this feature. Carry its findings into the final report.
 
 ### 2. Static checks
 Run, in the project root:
