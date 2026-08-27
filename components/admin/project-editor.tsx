@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -164,7 +164,16 @@ export function ProjectEditor({ project, initialBlocksConfig, siteUrl }: Project
   };
 
   return (
-    <>
+    // BlockSettingsDrawer's own trigger button and controls read
+    // --color-primary/--color-background as ambient CSS vars — normally set
+    // by whichever ThemeWrapper surrounds it (LandingThemeWrapper on the
+    // public configurator, a template's own ThemeWrapper inside
+    // PageRenderer). Nothing wraps the admin editor's own chrome in either,
+    // so those vars were undefined here — the trigger button rendered with
+    // no background/text color at all (invisible on the light admin
+    // background). Neutral admin-only values, independent of whichever
+    // template's ThemeWrapper renders further down inside PageRenderer.
+    <div style={{ "--color-primary": "#171717", "--color-background": "#ffffff" } as CSSProperties}>
       <div className="border-b border-neutral-200 bg-white px-8 py-4">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
           <div>
@@ -256,6 +265,6 @@ export function ProjectEditor({ project, initialBlocksConfig, siteUrl }: Project
           previewMode
         />
       </div>
-    </>
+    </div>
   );
 }
