@@ -15,6 +15,9 @@ export default function TuscanyPreviewPage() {
     text: blocksConfig.content.dresscode?.text ?? "",
     palette: ["#4B5320", "#F6F2EA", "#9C6B30", "#2B2620"],
   };
+  // Music is off by default (not part of the standard pack) — enabled here
+  // just to demo the feature end-to-end.
+  blocksConfig.features.music = true;
 
   return (
     <PageRenderer

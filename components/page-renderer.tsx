@@ -2,6 +2,8 @@ import { TEMPLATES } from "@/lib/templates/registry";
 import type { ProjectSummary } from "@/lib/templates/types";
 import type { BlocksConfig } from "@/lib/blocks";
 import type { ColorTokens } from "@/lib/theme/tokens";
+import { MusicToggle } from "@/components/music-toggle";
+import { DEFAULT_BACKGROUND_MUSIC_SRC } from "@/lib/audio/default-track";
 
 /**
  * Renders a guest-facing wedding site from a template + blocksConfig + theme.
@@ -33,6 +35,9 @@ export function PageRenderer({
 
   return (
     <ThemeWrapper colorTokens={colorTokens}>
+      {blocksConfig.features.music && (
+        <MusicToggle src={blocksConfig.features.musicUrl || DEFAULT_BACKGROUND_MUSIC_SRC} />
+      )}
       <Cover project={project} content={blocksConfig.cover} />
       {enabledOrder.map((type) => {
         const Block = blocks[type];
