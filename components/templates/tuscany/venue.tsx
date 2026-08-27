@@ -9,7 +9,9 @@ export function TuscanyVenue({ content }: BlockProps<"venue">) {
         {content.address || "Адрес будет объявлен"}
       </DisplayHeading>
       {content.description && (
-        <BodyText className="mx-auto mt-4 max-w-lg">{content.description}</BodyText>
+        <BodyText className="mx-auto mt-4 max-w-lg" font="display">
+          {content.description}
+        </BodyText>
       )}
       {content.mapUrl && (
         <a

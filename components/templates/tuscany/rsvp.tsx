@@ -61,7 +61,10 @@ export function TuscanyRsvp({ content, previewMode }: BlockProps<"rsvp">) {
         Будете с нами?
       </DisplayHeading>
       {content.deadline && !Number.isNaN(new Date(content.deadline).getTime()) && (
-        <p className="mt-2 text-sm text-(--color-text)/70">
+        <p
+          className="mt-2 text-sm text-(--color-text)/70"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
           Просим ответить до {deadlineFormatter.format(new Date(content.deadline))}
         </p>
       )}

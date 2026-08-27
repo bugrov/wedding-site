@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Section, DisplayHeading, BodyText } from "@/components/primitives";
+import { Section, DisplayHeading, BodyText, BotanicalSprig } from "@/components/primitives";
 import { BASE_PRICE_FALLBACK } from "@/lib/settings";
 
 export function LandingHero() {
@@ -24,23 +24,33 @@ export function LandingHero() {
             Свадебный сайт в эстетике Pinterest — за один вечер. Выберите стиль, добавьте фото и
             текст — мы опубликуем. Получите ссылку, которую не стыдно отправить гостям.
           </BodyText>
-          {/* "Glass" card, not italic AccentText — same display font as the
-              couple's names on Cover, per feedback. Flat price, no "от" and
-              no block-count caveat: deliberately one fixed number now. */}
-          <div className="mt-8 inline-block rounded-2xl border border-white/25 bg-white/10 px-8 py-4 shadow-lg backdrop-blur-md">
-            <p
-              className="text-4xl leading-tight font-normal text-(--color-background) md:text-5xl"
-              style={{ fontFamily: "var(--font-display)" }}
+          {/* Price and CTA in one flex row with an explicit gap — as two
+              separate inline-block elements they had no guaranteed spacing
+              and could sit flush against each other (see feedback: "слиплась
+              кнопка"). Wrapping instead of forcing one line keeps this from
+              cramping on narrow screens. */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
+            {/* Same parchment-card language as the calendar widget (see
+                Tuscany's WeddingCalendar) instead of a glass-on-dark card —
+                --color-accent-text is tuned for contrast against a light
+                background, not a dark photo, so the price needed a light
+                card under it to stay readable in that color. */}
+            <div className="relative rounded-2xl bg-(--color-background) px-8 py-4 shadow-xl">
+              <BotanicalSprig className="absolute -top-3 -right-2 h-8 w-5 rotate-[20deg] text-(--color-accent)/60" />
+              <p
+                className="text-4xl leading-tight font-normal text-(--color-accent-text) md:text-5xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {BASE_PRICE_FALLBACK.toLocaleString("ru-RU")} ₽
+              </p>
+            </div>
+            <a
+              href="#configurator"
+              className="inline-block rounded-full bg-(--color-background) px-6 py-3 text-sm font-medium text-(--color-primary) transition hover:opacity-90"
             >
-              {BASE_PRICE_FALLBACK.toLocaleString("ru-RU")} ₽
-            </p>
+              Оставить заявку
+            </a>
           </div>
-          <a
-            href="#configurator"
-            className="mt-8 inline-block rounded-full bg-(--color-background) px-6 py-3 text-sm font-medium text-(--color-primary) transition hover:opacity-90"
-          >
-            Оставить заявку
-          </a>
         </div>
       </div>
     </Section>

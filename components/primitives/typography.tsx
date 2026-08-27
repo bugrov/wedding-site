@@ -48,16 +48,22 @@ export function AccentText({
 export function BodyText({
   as: Tag = "p",
   className,
+  // "display" is for a block's supporting/editorial copy (dress code notes,
+  // schedule descriptions, wishes text, etc.) that reads too plain in the
+  // plain sans body font per feedback; "body" (default) stays for anything
+  // that's closer to UI chrome than narrative content.
+  font = "body",
   children,
 }: {
   as?: "p" | "span" | "div";
   className?: string;
+  font?: "body" | "display";
   children: React.ReactNode;
 }) {
   return (
     <Tag
       className={cn("text-base leading-relaxed text-(--color-text) whitespace-pre-line", className)}
-      style={{ fontFamily: "var(--font-body)" }}
+      style={{ fontFamily: font === "display" ? "var(--font-display)" : "var(--font-body)" }}
     >
       {children}
     </Tag>

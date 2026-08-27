@@ -14,7 +14,9 @@ export function TuscanyDressCode({ content }: BlockProps<"dresscode">) {
           <DisplayHeading as="h2" className="mt-3 text-3xl md:text-4xl">
             Стиль вечера
           </DisplayHeading>
-          <BodyText className="mt-4 md:max-w-md">{content.text}</BodyText>
+          <BodyText className="mt-4 md:max-w-md" font="display">
+            {content.text}
+          </BodyText>
           {content.palette && content.palette.length > 0 && (
             <div className="mt-6 flex justify-center gap-3 md:justify-start">
               {content.palette.map((color, i) => (

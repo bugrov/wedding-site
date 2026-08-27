@@ -17,8 +17,14 @@ export function TuscanySchedule({ content }: BlockProps<"schedule">) {
             >
               {item.time}
             </div>
-            <div className="mt-1 font-medium">{item.title}</div>
-            {item.description && <BodyText className="mt-1 text-sm">{item.description}</BodyText>}
+            <div className="mt-1 font-medium" style={{ fontFamily: "var(--font-display)" }}>
+              {item.title}
+            </div>
+            {item.description && (
+              <BodyText className="mt-1 text-sm" font="display">
+                {item.description}
+              </BodyText>
+            )}
             {i < content.items.length - 1 && <DividerLine className="mx-auto mt-6" />}
           </div>
         ))}

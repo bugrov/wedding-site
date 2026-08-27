@@ -8,7 +8,9 @@ export function TuscanyChat({ content }: BlockProps<"chat">) {
       <DisplayHeading as="h2" className="mt-3 text-3xl md:text-4xl">
         Общий чат
       </DisplayHeading>
-      <BodyText className="mx-auto mt-4 max-w-lg">{content.text}</BodyText>
+      <BodyText className="mx-auto mt-4 max-w-lg" font="display">
+        {content.text}
+      </BodyText>
       {content.link && (
         <a
           href={content.link}

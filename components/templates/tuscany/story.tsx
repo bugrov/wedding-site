@@ -33,11 +33,12 @@ export function TuscanyStory({ content }: BlockProps<"story">) {
             >
               “
             </span>
-            {/* The display serif, italicized, instead of the plain sans body
-                font — feedback was about the typeface reading too plain, not
-                the copy itself. */}
+            {/* The display serif instead of the plain sans body font —
+                feedback was about the typeface reading too plain, not the
+                copy itself. Upright, not italic, and held to ~20px (text-xl)
+                at every breakpoint per feedback. */}
             <p
-              className="relative text-xl leading-relaxed whitespace-pre-line text-(--color-text) italic md:text-2xl"
+              className="relative text-xl leading-relaxed whitespace-pre-line text-(--color-text)"
               style={{ fontFamily: "var(--font-display)" }}
             >
               {content.text}
