@@ -24,29 +24,28 @@ export function LandingHero() {
             Свадебный сайт в эстетике Pinterest — за один вечер. Выберите стиль, добавьте фото и
             текст — мы опубликуем. Получите ссылку, которую не стыдно отправить гостям.
           </BodyText>
-          {/* Price and CTA in one flex row with an explicit gap — as two
-              separate inline-block elements they had no guaranteed spacing
-              and could sit flush against each other (see feedback: "слиплась
-              кнопка"). Wrapping instead of forcing one line keeps this from
-              cramping on narrow screens. */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
-            {/* Same parchment-card language as the calendar widget (see
-                Tuscany's WeddingCalendar) instead of a glass-on-dark card —
-                --color-accent-text is tuned for contrast against a light
-                background, not a dark photo, so the price needed a light
-                card under it to stay readable in that color. */}
-            <div className="relative rounded-2xl bg-(--color-background) px-8 py-4 shadow-xl">
-              <BotanicalSprig className="absolute -top-3 -right-2 h-8 w-5 rotate-[20deg] text-(--color-accent)/60" />
-              <p
-                className="text-4xl leading-tight font-normal text-(--color-accent-text) md:text-5xl"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {BASE_PRICE_FALLBACK.toLocaleString("ru-RU")} ₽
-              </p>
-            </div>
+          {/* One card, price on top and the CTA directly under it — the
+              send-invite.online reference groups price + button into a
+              single unit rather than two floating elements side by side
+              (see feedback). Same parchment-card language as the calendar
+              widget (see Tuscany's WeddingCalendar): --color-accent-text is
+              tuned for contrast against a light background, not the dark
+              photo behind the hero, so the price needed a light card under
+              it to read clearly. */}
+          <div className="relative mx-auto mt-8 w-full max-w-[280px] rounded-2xl bg-(--color-background) px-8 py-6 shadow-xl">
+            <BotanicalSprig className="absolute -top-3 -right-2 h-8 w-5 rotate-[20deg] text-(--color-accent)/60" />
+            <p className="text-xs tracking-[0.2em] text-(--color-text)/50 uppercase">
+              Стоимость сайта
+            </p>
+            <p
+              className="mt-1 text-4xl leading-tight font-normal text-(--color-accent-text) md:text-5xl"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              {BASE_PRICE_FALLBACK.toLocaleString("ru-RU")} ₽
+            </p>
             <a
               href="#configurator"
-              className="inline-block rounded-full bg-(--color-background) px-6 py-3 text-sm font-medium text-(--color-primary) transition hover:opacity-90"
+              className="mt-5 block rounded-full bg-(--color-primary) px-6 py-3 text-center text-sm font-medium text-(--color-background) transition hover:opacity-90"
             >
               Оставить заявку
             </a>
