@@ -29,7 +29,7 @@ import { BlockSettingsDrawer } from "./block-settings-drawer";
 // field), the preview (and the Timer block, via project.weddingDate) picks
 // them up immediately.
 const FALLBACK_GROOM_NAME = "Александр";
-const FALLBACK_BRIDE_NAME = "Ольга";
+const FALLBACK_BRIDE_NAME = "Мария";
 const FALLBACK_WEDDING_DATE = new Date(new Date().getFullYear() + 1, 5, 15);
 
 // groomName/brideName/weddingDate are handled as their own state (see above)
@@ -220,7 +220,12 @@ export function Configurator() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* grid-cols-1 on mobile — "Telegram (необязательно)" wraps to 2
+              lines at a 2-column mobile width while "Телефон" stays 1 line,
+              pushing that input down out of line with the phone input (see
+              feedback: "не на одной линии"). sm: has enough room for both
+              on one line. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium" htmlFor="phone">
                 Телефон
