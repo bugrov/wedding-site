@@ -12,7 +12,7 @@ export function TuscanySchedule({ content }: BlockProps<"schedule">) {
         {content.items.map((item, i) => (
           <div key={i}>
             <div
-              className="text-xl font-semibold text-(--color-accent)"
+              className="text-xl font-semibold text-(--color-accent-text)"
               style={{ fontFamily: "var(--font-display)" }}
             >
               {item.time}

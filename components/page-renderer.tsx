@@ -45,7 +45,7 @@ export function PageRenderer({
         if (!content) return null;
         // Each key of `content` is only ever read by the matching block
         // renderer for that same key, so this is sound despite the cast.
-        return <Block key={type} content={content as never} />;
+        return <Block key={type} project={project} content={content as never} />;
       })}
     </ThemeWrapper>
   );

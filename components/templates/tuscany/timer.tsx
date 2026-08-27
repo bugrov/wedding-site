@@ -7,11 +7,8 @@ import type { BlockProps } from "@/lib/templates/types";
 import { TUSCANY_DECOR } from "./decor-assets";
 
 // Timer content is empty per the schema — it just counts down to the
-// project's wedding date, which isn't part of blocksConfig (it lives on the
-// project itself). For step 3 (template rendering only, no real project
-// wiring yet) we count down to a fixed placeholder date.
-const PLACEHOLDER_TARGET = new Date("2026-09-12T15:00:00");
-
+// project's wedding date, which lives on the project itself, not
+// blocksConfig (see BlockProps<T> — every block gets `project`, not just Cover).
 type Remaining = { days: number; hours: number; minutes: number; seconds: number };
 
 function getRemaining(target: Date): Remaining {
@@ -60,9 +57,8 @@ function useCountdown(target: Date): Remaining | null {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export function TuscanyTimer(_props: BlockProps<"timer">) {
-  void _props;
-  const remaining = useCountdown(PLACEHOLDER_TARGET);
+export function TuscanyTimer({ project }: BlockProps<"timer">) {
+  const remaining = useCountdown(project.weddingDate);
 
   const units: [string, number][] = [
     ["дней", remaining?.days ?? 0],

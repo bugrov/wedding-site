@@ -22,7 +22,11 @@ const rsvpFormSchema = z.object({
 
 type RsvpFormValues = z.infer<typeof rsvpFormSchema>;
 
-const inputClassName = "mt-1 w-full rounded-sm border border-black/20 bg-white px-3 py-2 text-sm";
+// min-h-11 (44px) + border/20->35: WCAG touch-target size + component-boundary
+// contrast, found via the ui-ux-pro-max audit — text inputs were ~36px tall
+// with a near-invisible border.
+const inputClassName =
+  "mt-1 min-h-11 w-full rounded-sm border border-black/35 bg-white px-3 py-2 text-sm";
 
 export function TuscanyRsvp({ content }: BlockProps<"rsvp">) {
   const {
@@ -74,7 +78,7 @@ export function TuscanyRsvp({ content }: BlockProps<"rsvp">) {
             ).map(([value, label]) => (
               <label
                 key={value}
-                className="flex items-center justify-center rounded-sm border border-black/20 px-4 py-2 text-sm font-medium transition has-checked:border-(--color-primary) has-checked:bg-(--color-primary) has-checked:text-(--color-background) has-focus-visible:ring-2 has-focus-visible:ring-(--color-accent)"
+                className="flex min-h-11 items-center justify-center rounded-sm border border-black/35 px-4 py-2 text-sm font-medium transition has-checked:border-(--color-primary) has-checked:bg-(--color-primary) has-checked:text-(--color-background) has-focus-visible:ring-2 has-focus-visible:ring-(--color-accent)"
               >
                 <input type="radio" value={value} {...register("attending")} className="sr-only" />
                 {label}
@@ -139,7 +143,7 @@ export function TuscanyRsvp({ content }: BlockProps<"rsvp">) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-sm bg-(--color-primary) px-4 py-2 text-sm font-medium text-(--color-background) transition hover:opacity-90 disabled:opacity-50"
+          className="min-h-11 w-full rounded-sm bg-(--color-primary) px-4 py-2 text-sm font-medium text-(--color-background) transition hover:opacity-90 disabled:opacity-50"
         >
           {isSubmitting ? "Отправляем…" : "Отправить"}
         </button>

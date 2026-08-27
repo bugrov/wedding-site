@@ -37,7 +37,7 @@ export function AccentText({
 }) {
   return (
     <span
-      className={cn("text-xl text-(--color-accent) italic md:text-2xl", className)}
+      className={cn("text-xl text-(--color-accent-text) italic md:text-2xl", className)}
       style={{ fontFamily: "var(--font-accent, var(--font-display))" }}
     >
       {children}
@@ -75,7 +75,7 @@ export function Eyebrow({
 }) {
   return (
     <span
-      className={cn("text-xs tracking-[0.2em] text-(--color-accent) uppercase", className)}
+      className={cn("text-xs tracking-[0.2em] text-(--color-accent-text) uppercase", className)}
       style={{ fontFamily: "var(--font-body)" }}
     >
       {children}

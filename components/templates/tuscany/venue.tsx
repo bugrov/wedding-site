@@ -16,7 +16,7 @@ export function TuscanyVenue({ content }: BlockProps<"venue">) {
           href={content.mapUrl}
           target="_blank"
           rel="noreferrer"
-          className="mt-6 inline-block text-sm underline underline-offset-4 text-(--color-accent)"
+          className="mt-6 inline-block text-sm underline underline-offset-4 text-(--color-accent-text)"
         >
           Открыть на карте
         </a>

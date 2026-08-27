@@ -17,6 +17,7 @@ export type CoverProps = {
 };
 
 export type BlockProps<T extends BlockType> = {
+  project: ProjectSummary;
   content: BlockContent<T>;
 };
 
