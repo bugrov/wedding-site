@@ -22,4 +22,5 @@ export {
   type BlockContent,
   type BlockFeatures,
   type BlocksConfig,
+  type CoverContent,
 } from "./schema";

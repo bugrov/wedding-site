@@ -38,6 +38,8 @@ export const coverContentSchema = z.object({
   tagline: z.string().max(120, "Слишком длинный текст").optional(),
 });
 
+export type CoverContent = z.infer<typeof coverContentSchema>;
+
 export const timerContentSchema = z.object({});
 
 export const storyContentSchema = z.object({
