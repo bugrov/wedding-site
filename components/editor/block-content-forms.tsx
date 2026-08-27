@@ -15,6 +15,20 @@ const removeButtonClassName =
 const addButtonClassName =
   "flex min-h-11 items-center justify-center gap-2 rounded-sm border border-dashed border-black/30 px-4 py-2 text-sm text-black/70 hover:bg-black/5";
 
+// A page URL (e.g. unsplash.com/photos/...) looks like a valid link but
+// isn't an image file — the browser can't render an HTML page as a photo,
+// and it silently shows nothing rather than an obvious error. Can't
+// reliably auto-fix this for arbitrary sites without a fragile per-host
+// scraper, so just tell people what's actually needed.
+function PhotoUrlHint() {
+  return (
+    <p className="mt-1 text-xs text-black/50">
+      Прямая ссылка на файл изображения, а не на страницу сайта — например, правой кнопкой на фото →
+      «Копировать адрес изображения».
+    </p>
+  );
+}
+
 export function CoverForm({
   value,
   onChange,
@@ -40,6 +54,7 @@ export function CoverForm({
           placeholder="https://..."
           className={fieldClassName}
         />
+        <PhotoUrlHint />
       </div>
     </div>
   );
@@ -71,6 +86,7 @@ export function StoryForm({
           placeholder="https://..."
           className={fieldClassName}
         />
+        <PhotoUrlHint />
       </div>
     </div>
   );
@@ -279,6 +295,7 @@ export function GalleryForm({
 
   return (
     <div className="space-y-2">
+      {photos.length > 0 && <PhotoUrlHint />}
       {photos.map((photo, i) => (
         <div key={i} className="flex items-center gap-2">
           <input
@@ -417,12 +434,15 @@ export function FeaturesForm({
         Фоновая музыка
       </label>
       {value.music && (
-        <input
-          value={value.musicUrl ?? ""}
-          onChange={(e) => onChange({ ...value, musicUrl: e.target.value })}
-          placeholder="Ссылка на mp3 (необязательно — иначе трек по умолчанию)"
-          className={fieldClassName}
-        />
+        <div>
+          <label className="block text-sm font-medium">Ссылка на mp3 или название трека</label>
+          <input
+            value={value.musicUrl ?? ""}
+            onChange={(e) => onChange({ ...value, musicUrl: e.target.value })}
+            placeholder="Например: Lana Del Rey — Chemtrails Over The Country Club"
+            className={fieldClassName}
+          />
+        </div>
       )}
       <label className="flex min-h-11 items-center gap-3 text-sm">
         <input
@@ -432,15 +452,6 @@ export function FeaturesForm({
           className="h-4 w-4 accent-(--color-primary)"
         />
         QR-код для печатных приглашений
-      </label>
-      <label className="flex min-h-11 items-center gap-3 text-sm">
-        <input
-          type="checkbox"
-          checked={value.personalizedLinks}
-          onChange={(e) => onChange({ ...value, personalizedLinks: e.target.checked })}
-          className="h-4 w-4 accent-(--color-primary)"
-        />
-        Именные ссылки для гостей
       </label>
     </div>
   );

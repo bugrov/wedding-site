@@ -151,7 +151,11 @@ export const DEFAULT_BLOCK_CONTENT: { [K in BlockType]: BlockContent<K> } = {
 
 export const blockFeaturesSchema = z.object({
   music: z.boolean().default(false),
-  musicUrl: httpUrlSchema.optional(),
+  // Deliberately not httpUrlSchema: this doubles as "just tell us the track
+  // name, we'll find the real file" at the lead stage (see UI label) — it's
+  // only ever used as an <audio src>, not a clickable/navigable href, so a
+  // non-URL value here can't do anything worse than fail to play.
+  musicUrl: z.string().max(200, "Слишком длинный текст").optional(),
   qrCode: z.boolean().default(true),
   personalizedLinks: z.boolean().default(false),
 });
