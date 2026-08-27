@@ -58,7 +58,11 @@ export const scheduleContentSchema = z.object({
 });
 
 export const venueContentSchema = z.object({
-  address: z.string().min(1, "Укажите адрес"),
+  // Not required at the storage layer: the venue renderer already falls
+  // back to "Адрес будет объявлен" for an empty address (a real project can
+  // exist before the venue is finalized). The admin edit form is the right
+  // place to nudge "fill this in before publishing", not this schema.
+  address: z.string(),
   mapUrl: z.union([z.string().url("Некорректная ссылка"), z.literal("")]).optional(),
   description: z.string().max(1000, "Слишком длинный текст").optional(),
 });
