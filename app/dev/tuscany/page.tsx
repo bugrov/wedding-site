@@ -7,6 +7,14 @@ import { createDefaultBlocksConfig } from "@/lib/blocks";
 // architecture works together before templates 2-5 get built on top of it.
 export default function TuscanyPreviewPage() {
   const blocksConfig = createDefaultBlocksConfig();
+  // Dress-code palette is optional and not part of the shared cross-template
+  // default (it's a per-project suggestion, not tied to any one template) —
+  // set here just to demo the multi-color swatch feature end-to-end.
+  blocksConfig.content.dresscode = {
+    ...blocksConfig.content.dresscode,
+    text: blocksConfig.content.dresscode?.text ?? "",
+    palette: ["#4B5320", "#F6F2EA", "#9C6B30", "#2B2620"],
+  };
 
   return (
     <PageRenderer

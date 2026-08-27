@@ -22,3 +22,21 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Project-wide convention: every interactive element shows a pointer cursor
+   on hover, not just plain <button>s — native radios/checkboxes and custom
+   label-wrapped controls default to "default"/"auto" in some browsers. */
+button:not(:disabled),
+a,
+label,
+input[type="radio"],
+input[type="checkbox"],
+select,
+[role="button"],
+[data-cursor-pointer] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

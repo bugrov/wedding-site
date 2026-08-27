@@ -65,13 +65,21 @@ export function TuscanyRsvp({ content }: BlockProps<"rsvp">) {
 
         <div>
           <span className="block text-sm font-medium">Вы придёте?</span>
-          <div className="mt-1 flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input type="radio" value="yes" {...register("attending")} /> Да
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="radio" value="no" {...register("attending")} /> Нет
-            </label>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {(
+              [
+                ["yes", "Да, буду"],
+                ["no", "Не смогу"],
+              ] as const
+            ).map(([value, label]) => (
+              <label
+                key={value}
+                className="flex items-center justify-center rounded-sm border border-black/20 px-4 py-2 text-sm font-medium transition has-checked:border-(--color-primary) has-checked:bg-(--color-primary) has-checked:text-(--color-background) has-focus-visible:ring-2 has-focus-visible:ring-(--color-accent)"
+              >
+                <input type="radio" value={value} {...register("attending")} className="sr-only" />
+                {label}
+              </label>
+            ))}
           </div>
         </div>
 
