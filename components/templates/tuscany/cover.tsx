@@ -27,7 +27,7 @@ export function TuscanyCover({ project, content }: CoverProps) {
         <BotanicalSprig />
       </div>
       <div className="mt-10">
-        <PhotoGrid variant="hero" photos={[]} />
+        <PhotoGrid variant="hero" photos={content.photoUrl ? [{ src: content.photoUrl }] : []} />
       </div>
     </Section>
   );

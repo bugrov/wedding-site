@@ -72,6 +72,20 @@ export function PhotoGrid({
   );
 }
 
+function isRenderableUrl(src: string): boolean {
+  // A controlled input feeding this straight into next/image (e.g. the
+  // configurator's live-editing photo fields) produces an invalid,
+  // in-progress URL on every keystroke until typing finishes — next/image
+  // throws synchronously on those instead of just failing to load, crashing
+  // the whole tree. Treat "not a real URL yet" the same as "no photo".
+  try {
+    new URL(src);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function PhotoSlot({
   photo,
   aspectClassName,
@@ -81,7 +95,7 @@ function PhotoSlot({
   aspectClassName?: string;
   className?: string;
 }) {
-  if (!photo?.src) {
+  if (!photo?.src || !isRenderableUrl(photo.src)) {
     return (
       <div
         className={cn(

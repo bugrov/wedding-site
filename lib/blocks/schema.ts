@@ -1,5 +1,26 @@
 import { z } from "zod";
 
+// z.string().url() alone accepts any scheme, including "javascript:" — fine
+// while only the operator filled these in, but these URL fields (mapUrl,
+// musicUrl, photoUrl) are now reachable directly from the public
+// configurator, and mapUrl/photoUrl get rendered as href/src. Restrict to
+// http(s) explicitly (see api-security-hardening audit finding).
+const httpUrlSchema = z
+  .string()
+  .refine(
+    (value) => value === "" || /^https?:\/\//i.test(value),
+    "Ссылка должна начинаться с http(s)",
+  )
+  .refine((value) => {
+    if (value === "") return true;
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }, "Некорректная ссылка");
+
 // The 9 blocks from the plan, minus "Обложка" (Cover) — Cover is mandatory
 // and not part of the toggleable/reorderable list (it's the project's root,
 // not a block in the ordinary sense). Order here is the default sequence;
@@ -36,6 +57,7 @@ export const DEFAULT_BLOCK_ORDER: BlockType[] = [...BLOCK_TYPES];
 
 export const coverContentSchema = z.object({
   tagline: z.string().max(120, "Слишком длинный текст").optional(),
+  photoUrl: httpUrlSchema.optional(),
 });
 
 export type CoverContent = z.infer<typeof coverContentSchema>;
@@ -44,7 +66,7 @@ export const timerContentSchema = z.object({});
 
 export const storyContentSchema = z.object({
   text: z.string().min(1, "Добавьте текст истории").max(4000, "Слишком длинный текст"),
-  photoUrl: z.union([z.string().url("Некорректная ссылка"), z.literal("")]).optional(),
+  photoUrl: httpUrlSchema.optional(),
 });
 
 export const scheduleItemSchema = z.object({
@@ -63,7 +85,7 @@ export const venueContentSchema = z.object({
   // exist before the venue is finalized). The admin edit form is the right
   // place to nudge "fill this in before publishing", not this schema.
   address: z.string(),
-  mapUrl: z.union([z.string().url("Некорректная ссылка"), z.literal("")]).optional(),
+  mapUrl: httpUrlSchema.optional(),
   description: z.string().max(1000, "Слишком длинный текст").optional(),
 });
 
@@ -73,7 +95,7 @@ export const dressCodeContentSchema = z.object({
 });
 
 export const galleryContentSchema = z.object({
-  photos: z.array(z.string().url("Некорректная ссылка")).max(20, "Не более 20 фото").default([]),
+  photos: z.array(httpUrlSchema).max(20, "Не более 20 фото").default([]),
 });
 
 export const wishesContentSchema = z.object({
@@ -129,7 +151,7 @@ export const DEFAULT_BLOCK_CONTENT: { [K in BlockType]: BlockContent<K> } = {
 
 export const blockFeaturesSchema = z.object({
   music: z.boolean().default(false),
-  musicUrl: z.union([z.string().url("Некорректная ссылка"), z.literal("")]).optional(),
+  musicUrl: httpUrlSchema.optional(),
   qrCode: z.boolean().default(true),
   personalizedLinks: z.boolean().default(false),
 });

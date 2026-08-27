@@ -8,8 +8,13 @@ import { toast } from "sonner";
 import {
   BLOCK_TYPES,
   DEFAULT_BLOCK_ORDER,
-  createDefaultBlocksConfig,
+  DEFAULT_BLOCK_CONTENT,
+  DEFAULT_BLOCK_FEATURES,
   type BlockType,
+  type BlockContent,
+  type CoverContent,
+  type BlockFeatures,
+  type BlocksConfig,
 } from "@/lib/blocks";
 import { TEMPLATE_IDS } from "@/lib/templates/registry";
 import { PageRenderer } from "@/components/page-renderer";
@@ -43,6 +48,13 @@ export function Configurator() {
   const [enabledBlocks, setEnabledBlocks] = useState<BlockType[]>([...BLOCK_TYPES]);
   const [templateId, setTemplateId] = useState(TEMPLATE_IDS[0]);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [coverContent, setCoverContent] = useState<CoverContent>({});
+  // Content for every block type is always kept in state (not just enabled
+  // ones) so toggling a block off and back on doesn't discard what the
+  // visitor already typed in it.
+  const [content, setContent] =
+    useState<{ [K in BlockType]: BlockContent<K> }>(DEFAULT_BLOCK_CONTENT);
+  const [features, setFeatures] = useState<BlockFeatures>(DEFAULT_BLOCK_FEATURES);
 
   const {
     register,
@@ -53,15 +65,22 @@ export function Configurator() {
     resolver: zodResolver(contactFormSchema),
   });
 
-  const blocksConfig = useMemo(
-    () => createDefaultBlocksConfig(DEFAULT_BLOCK_ORDER.filter((b) => enabledBlocks.includes(b))),
-    [enabledBlocks],
-  );
+  const blocksConfig: BlocksConfig = useMemo(() => {
+    const order = DEFAULT_BLOCK_ORDER.filter((b) => enabledBlocks.includes(b));
+    const filteredContent = Object.fromEntries(
+      order.map((type) => [type, content[type]]),
+    ) as BlocksConfig["content"];
+    return { enabledBlocks, order, cover: coverContent, content: filteredContent, features };
+  }, [enabledBlocks, coverContent, content, features]);
 
   const toggleBlock = (type: BlockType) => {
     setEnabledBlocks((current) =>
       current.includes(type) ? current.filter((b) => b !== type) : [...current, type],
     );
+  };
+
+  const updateContent = <K extends BlockType>(type: K, next: BlockContent<K>) => {
+    setContent((current) => ({ ...current, [type]: next }));
   };
 
   const onSubmit = async (data: ContactFormValues) => {
@@ -100,6 +119,12 @@ export function Configurator() {
         onToggleBlock={toggleBlock}
         templateId={templateId}
         onTemplateChange={setTemplateId}
+        coverContent={coverContent}
+        onCoverChange={setCoverContent}
+        content={content}
+        onContentChange={updateContent}
+        features={features}
+        onFeaturesChange={setFeatures}
       />
 
       {/* Full-page site preview — the real PageRenderer output at its
