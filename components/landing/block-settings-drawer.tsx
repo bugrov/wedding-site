@@ -152,7 +152,7 @@ export function BlockSettingsDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Настройки сайта"
-        className="fixed top-0 right-0 z-50 h-full w-full max-w-sm transform overflow-y-auto bg-white shadow-2xl transition-transform duration-300"
+        className="fixed top-0 right-0 z-50 h-full w-full max-w-sm transform overflow-y-auto bg-white shadow-2xl transition-transform duration-300 md:max-w-lg"
         style={{ transform: open ? "translateX(0)" : "translateX(100%)" }}
         aria-hidden={!open}
       >
@@ -219,7 +219,7 @@ export function BlockSettingsDrawer({
                 return (
                   <label
                     key={id}
-                    className="flex min-h-11 cursor-pointer items-center gap-3 rounded-sm border border-black/20 px-4 py-2 text-sm has-checked:border-(--color-primary) has-checked:bg-(--color-primary)/5"
+                    className="flex min-h-11 cursor-pointer items-start gap-3 rounded-sm border border-black/20 px-4 py-2 text-sm has-checked:border-(--color-primary) has-checked:bg-(--color-primary)/5"
                   >
                     <input
                       type="radio"
@@ -231,8 +231,11 @@ export function BlockSettingsDrawer({
                     />
                     {/* Same swatch idea as the landing page's "Направления
                         дизайна" section — a quick visual fingerprint of the
-                        template's palette, not just its name. */}
-                    <span className="flex gap-1">
+                        template's palette, not just its name. items-start +
+                        this top margin (not items-center) so the dots line
+                        up with the first line if a longer template name ever
+                        wraps to 2 lines. */}
+                    <span className="mt-0.5 flex shrink-0 gap-1">
                       {[primary, accent, background].map((color, i) => (
                         <span
                           key={i}
@@ -241,7 +244,7 @@ export function BlockSettingsDrawer({
                         />
                       ))}
                     </span>
-                    {TEMPLATES[id].label}
+                    <span className="py-0.5">{TEMPLATES[id].label}</span>
                   </label>
                 );
               })}
@@ -263,12 +266,17 @@ export function BlockSettingsDrawer({
                 return (
                   <div key={type} className="rounded-sm border border-black/20">
                     <div className="flex min-h-11 items-center gap-2 px-4 py-2">
-                      <label className="flex flex-1 cursor-pointer items-center gap-3 text-sm">
+                      {/* items-start + a nudge on the checkbox, not
+                          items-center — a long label ("Пожелания и подарки")
+                          wraps to 2 lines on narrow screens, and items-center
+                          then floats the checkbox between the lines instead
+                          of next to the first one (see feedback). */}
+                      <label className="flex flex-1 cursor-pointer items-start gap-3 py-1 text-sm">
                         <input
                           type="checkbox"
                           checked={enabledBlocks.includes(type)}
                           onChange={() => onToggleBlock(type)}
-                          className="h-4 w-4 accent-(--color-primary)"
+                          className="mt-0.5 h-4 w-4 shrink-0 accent-(--color-primary)"
                         />
                         {BLOCK_LABELS[type]}
                       </label>

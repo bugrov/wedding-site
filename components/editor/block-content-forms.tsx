@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Trash2, ImageOff, ExternalLink } from "lucide-react";
 import type { CoverContent, BlockContent, BlockFeatures } from "@/lib/blocks";
+import { cn } from "@/lib/utils";
 
 // Shared by every per-block form below, and (once step 6 builds it) the
 // admin editor — same content schemas, same form fields, whichever surface
@@ -16,6 +17,36 @@ const removeButtonClassName =
 const addButtonClassName =
   "flex min-h-11 items-center justify-center gap-2 rounded-sm border border-dashed border-black/30 px-4 py-2 text-sm text-black/70 hover:bg-black/5";
 
+// A checkbox + label row, shared by every "toggle this option" list in these
+// forms (RSVP question toggles, features). items-start + a nudge on the
+// checkbox (not items-center) — a long label wraps to 2 lines on narrow
+// screens, and items-center then floats the checkbox between the two lines
+// instead of next to the first one (see feedback: mobile/tablet elements
+// "не ровно по горизонтали расположены").
+export function CheckboxField({
+  checked,
+  onChange,
+  className,
+  children,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className={cn("flex min-h-11 items-start gap-3 py-1 text-sm", className)}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 shrink-0 accent-(--color-primary)"
+      />
+      {children}
+    </label>
+  );
+}
+
 // A page URL (e.g. unsplash.com/photos/...) looks like a valid link but
 // isn't an image file — the browser can't render an HTML page as a photo.
 // Rather than just explain that in text (easy to miss/ignore), show an
@@ -26,9 +57,11 @@ const addButtonClassName =
 function PhotoThumbnail({
   src,
   onLoadStateChange,
+  className,
 }: {
   src: string;
   onLoadStateChange?: (failed: boolean) => void;
+  className?: string;
 }) {
   const [failed, setFailed] = useState(false);
 
@@ -38,7 +71,12 @@ function PhotoThumbnail({
   };
 
   return (
-    <div className="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-black/15 bg-neutral-50">
+    <div
+      className={cn(
+        "flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-black/15 bg-neutral-50",
+        className,
+      )}
+    >
       {failed ? (
         <ImageOff className="h-4 w-4 text-red-500" aria-label="Не удалось загрузить" />
       ) : (
@@ -72,14 +110,21 @@ function PhotoUrlField({
   return (
     <div>
       <label className="block text-sm font-medium">{label}</label>
-      <div className="mt-1 flex items-start gap-3">
+      <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="https://..."
           className={`${fieldClassName} mt-0`}
         />
-        {value && <PhotoThumbnail key={value} src={value} onLoadStateChange={setFailed} />}
+        {value && (
+          <PhotoThumbnail
+            key={value}
+            src={value}
+            onLoadStateChange={setFailed}
+            className="self-end sm:self-auto"
+          />
+        )}
       </div>
       {value && failed && <p className="mt-1 text-xs text-red-600">{photoUrlFailHint}</p>}
     </div>
@@ -196,8 +241,11 @@ export function ScheduleForm({
     <div className="space-y-4">
       {items.map((item, i) => (
         <div key={i} className="space-y-2 rounded-sm border border-black/10 p-3">
-          <div className="flex items-start gap-2">
-            <div className="w-24 shrink-0">
+          {/* Время/Название side by side left "Название" too narrow to show
+              a real title (see feedback) — stacked on mobile, one row from
+              sm: up where there's actually room for both. */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+            <div className="w-full sm:w-24 sm:shrink-0">
               <label className="block text-xs font-medium">Время</label>
               <input
                 value={item.time}
@@ -205,22 +253,24 @@ export function ScheduleForm({
                 className={fieldClassName}
               />
             </div>
-            <div className="flex-1">
-              <label className="block text-xs font-medium">Название</label>
-              <input
-                value={item.title}
-                onChange={(e) => updateItem(i, { title: e.target.value })}
-                className={fieldClassName}
-              />
+            <div className="flex flex-1 items-end gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-medium">Название</label>
+                <input
+                  value={item.title}
+                  onChange={(e) => updateItem(i, { title: e.target.value })}
+                  className={fieldClassName}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => removeItem(i)}
+                aria-label="Удалить пункт"
+                className={removeButtonClassName}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => removeItem(i)}
-              aria-label="Удалить пункт"
-              className={`${removeButtonClassName} mt-5`}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden />
-            </button>
           </div>
           <div>
             <label className="block text-xs font-medium">Описание (необязательно)</label>
@@ -259,7 +309,9 @@ export function VenueForm({
       </div>
       <div>
         <label className="block text-sm font-medium">Ссылка на карту (необязательно)</label>
-        <div className="mt-1 flex items-center gap-2">
+        {/* Stacked on mobile — the link plus "Проверить" side by side left
+            barely any room for the URL itself on narrow screens. */}
+        <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
             value={value.mapUrl ?? ""}
             onChange={(e) => onChange({ ...value, mapUrl: e.target.value })}
@@ -271,7 +323,7 @@ export function VenueForm({
               href={value.mapUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-sm border border-black/20 px-3 text-sm hover:bg-black/5"
+              className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-sm border border-black/20 px-3 text-sm hover:bg-black/5"
             >
               <ExternalLink className="h-4 w-4" aria-hidden />
               Проверить
@@ -377,22 +429,28 @@ function PhotoRow({
 
   return (
     <div>
-      <div className="flex items-center gap-2">
+      {/* Stacked on mobile, one row from sm: up — input + thumbnail +
+          delete side by side left too little room for the URL on narrow
+          screens (see feedback: "некоторые инпуты на мобайл ... следовало
+          разделять на 2 строки"). */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           value={photo}
           onChange={(e) => onChange(e.target.value)}
           placeholder="https://..."
           className={fieldClassName}
         />
-        {photo && <PhotoThumbnail key={photo} src={photo} onLoadStateChange={setFailed} />}
-        <button
-          type="button"
-          onClick={onRemove}
-          aria-label="Удалить фото"
-          className={removeButtonClassName}
-        >
-          <Trash2 className="h-4 w-4" aria-hidden />
-        </button>
+        <div className="flex items-center gap-2 self-end sm:mt-1 sm:self-auto">
+          {photo && <PhotoThumbnail key={photo} src={photo} onLoadStateChange={setFailed} />}
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label="Удалить фото"
+            className={removeButtonClassName}
+          >
+            <Trash2 className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
       </div>
       {photo && failed && <p className="mt-1 text-xs text-red-600">{photoUrlFailHint}</p>}
     </div>
@@ -520,17 +578,15 @@ export function RsvpForm({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
+      <div className="space-y-1">
         {options.map(([key, label]) => (
-          <label key={key} className="flex min-h-11 items-center gap-3 text-sm">
-            <input
-              type="checkbox"
-              checked={value[key]}
-              onChange={(e) => onChange({ ...value, [key]: e.target.checked })}
-              className="h-4 w-4 accent-(--color-primary)"
-            />
+          <CheckboxField
+            key={key}
+            checked={value[key]}
+            onChange={(checked) => onChange({ ...value, [key]: checked })}
+          >
             {label}
-          </label>
+          </CheckboxField>
         ))}
       </div>
       <div>
@@ -568,7 +624,8 @@ export function ChatForm({
         <label className="block text-sm font-medium">
           Ссылка на чат (Telegram, WhatsApp и т.д.)
         </label>
-        <div className="mt-1 flex items-center gap-2">
+        {/* Stacked on mobile — same reasoning as VenueForm's map link row. */}
+        <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
             value={value.link ?? ""}
             onChange={(e) => onChange({ ...value, link: e.target.value })}
@@ -580,7 +637,7 @@ export function ChatForm({
               href={value.link}
               target="_blank"
               rel="noreferrer"
-              className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-sm border border-black/20 px-3 text-sm hover:bg-black/5"
+              className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-sm border border-black/20 px-3 text-sm hover:bg-black/5"
             >
               <ExternalLink className="h-4 w-4" aria-hidden />
               Проверить
@@ -601,15 +658,12 @@ export function FeaturesForm({
 }) {
   return (
     <div className="space-y-3">
-      <label className="flex min-h-11 items-center gap-3 text-sm">
-        <input
-          type="checkbox"
-          checked={value.music}
-          onChange={(e) => onChange({ ...value, music: e.target.checked })}
-          className="h-4 w-4 accent-(--color-primary)"
-        />
+      <CheckboxField
+        checked={value.music}
+        onChange={(checked) => onChange({ ...value, music: checked })}
+      >
         Фоновая музыка
-      </label>
+      </CheckboxField>
       {value.music && (
         <div>
           <label className="block text-sm font-medium">Ссылка на mp3 или название трека</label>
@@ -621,15 +675,12 @@ export function FeaturesForm({
           />
         </div>
       )}
-      <label className="flex min-h-11 items-center gap-3 text-sm">
-        <input
-          type="checkbox"
-          checked={value.qrCode}
-          onChange={(e) => onChange({ ...value, qrCode: e.target.checked })}
-          className="h-4 w-4 accent-(--color-primary)"
-        />
+      <CheckboxField
+        checked={value.qrCode}
+        onChange={(checked) => onChange({ ...value, qrCode: checked })}
+      >
         QR-код для печатных приглашений
-      </label>
+      </CheckboxField>
     </div>
   );
 }
