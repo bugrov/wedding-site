@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash2, ImageOff } from "lucide-react";
 import type { CoverContent, BlockContent, BlockFeatures } from "@/lib/blocks";
 
 // Shared by every per-block form below, and (once step 6 builds it) the
@@ -16,16 +17,72 @@ const addButtonClassName =
   "flex min-h-11 items-center justify-center gap-2 rounded-sm border border-dashed border-black/30 px-4 py-2 text-sm text-black/70 hover:bg-black/5";
 
 // A page URL (e.g. unsplash.com/photos/...) looks like a valid link but
-// isn't an image file — the browser can't render an HTML page as a photo,
-// and it silently shows nothing rather than an obvious error. Can't
-// reliably auto-fix this for arbitrary sites without a fragile per-host
-// scraper, so just tell people what's actually needed.
-function PhotoUrlHint() {
+// isn't an image file — the browser can't render an HTML page as a photo.
+// Rather than just explain that in text (easy to miss/ignore), show an
+// actual thumbnail loaded from the pasted URL, so a bad link is visibly
+// obvious immediately instead of only showing up later in the full preview.
+// Plain <img>, not next/image: this is a lightweight live-feedback probe for
+// an arbitrary, not-yet-validated external URL, not a production asset.
+function PhotoThumbnail({
+  src,
+  onLoadStateChange,
+}: {
+  src: string;
+  onLoadStateChange?: (failed: boolean) => void;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  const setState = (value: boolean) => {
+    setFailed(value);
+    onLoadStateChange?.(value);
+  };
+
   return (
-    <p className="mt-1 text-xs text-black/50">
-      Прямая ссылка на файл изображения, а не на страницу сайта — например, правой кнопкой на фото →
-      «Копировать адрес изображения».
-    </p>
+    <div className="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-black/15 bg-neutral-50">
+      {failed ? (
+        <ImageOff className="h-4 w-4 text-red-500" aria-label="Не удалось загрузить" />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt=""
+          className="h-full w-full object-cover"
+          onError={() => setState(true)}
+          onLoad={() => setState(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+const photoUrlFailHint =
+  "Не удалось загрузить изображение по этой ссылке — нужна прямая ссылка на файл, а не на страницу сайта (например, правой кнопкой на фото → «Копировать адрес изображения»).";
+
+function PhotoUrlField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <div>
+      <label className="block text-sm font-medium">{label}</label>
+      <div className="mt-1 flex items-start gap-3">
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://..."
+          className={`${fieldClassName} mt-0`}
+        />
+        {value && <PhotoThumbnail key={value} src={value} onLoadStateChange={setFailed} />}
+      </div>
+      {value && failed && <p className="mt-1 text-xs text-red-600">{photoUrlFailHint}</p>}
+    </div>
   );
 }
 
@@ -46,16 +103,11 @@ export function CoverForm({
           className={fieldClassName}
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium">Фото на обложке (ссылка)</label>
-        <input
-          value={value.photoUrl ?? ""}
-          onChange={(e) => onChange({ ...value, photoUrl: e.target.value })}
-          placeholder="https://..."
-          className={fieldClassName}
-        />
-        <PhotoUrlHint />
-      </div>
+      <PhotoUrlField
+        label="Фото на обложке (ссылка)"
+        value={value.photoUrl ?? ""}
+        onChange={(photoUrl) => onChange({ ...value, photoUrl })}
+      />
     </div>
   );
 }
@@ -78,16 +130,11 @@ export function StoryForm({
           className={fieldClassName}
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium">Фото (ссылка)</label>
-        <input
-          value={value.photoUrl ?? ""}
-          onChange={(e) => onChange({ ...value, photoUrl: e.target.value })}
-          placeholder="https://..."
-          className={fieldClassName}
-        />
-        <PhotoUrlHint />
-      </div>
+      <PhotoUrlField
+        label="Фото (ссылка)"
+        value={value.photoUrl ?? ""}
+        onChange={(photoUrl) => onChange({ ...value, photoUrl })}
+      />
     </div>
   );
 }
@@ -271,6 +318,41 @@ export function DressCodeForm({
   );
 }
 
+function GalleryPhotoRow({
+  photo,
+  onChange,
+  onRemove,
+}: {
+  photo: string;
+  onChange: (url: string) => void;
+  onRemove: () => void;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <input
+          value={photo}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://..."
+          className={fieldClassName}
+        />
+        {photo && <PhotoThumbnail key={photo} src={photo} onLoadStateChange={setFailed} />}
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Удалить фото"
+          className={removeButtonClassName}
+        >
+          <Trash2 className="h-4 w-4" aria-hidden />
+        </button>
+      </div>
+      {photo && failed && <p className="mt-1 text-xs text-red-600">{photoUrlFailHint}</p>}
+    </div>
+  );
+}
+
 export function GalleryForm({
   value,
   onChange,
@@ -295,24 +377,13 @@ export function GalleryForm({
 
   return (
     <div className="space-y-2">
-      {photos.length > 0 && <PhotoUrlHint />}
       {photos.map((photo, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <input
-            value={photo}
-            onChange={(e) => updatePhoto(i, e.target.value)}
-            placeholder="https://..."
-            className={fieldClassName}
-          />
-          <button
-            type="button"
-            onClick={() => removePhoto(i)}
-            aria-label="Удалить фото"
-            className={removeButtonClassName}
-          >
-            <Trash2 className="h-4 w-4" aria-hidden />
-          </button>
-        </div>
+        <GalleryPhotoRow
+          key={i}
+          photo={photo}
+          onChange={(url) => updatePhoto(i, url)}
+          onRemove={() => removePhoto(i)}
+        />
       ))}
       <button type="button" onClick={addPhoto} className={`${addButtonClassName} w-full`}>
         <Plus className="h-4 w-4" aria-hidden />
