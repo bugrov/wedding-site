@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Section, Eyebrow } from "@/components/primitives";
 import type { BlockProps } from "@/lib/templates/types";
 import { TUSCANY_DECOR } from "./decor-assets";
+import { WeddingCalendar } from "./wedding-calendar";
 
 // Timer content is empty per the schema — it just counts down to the
 // project's wedding date, which lives on the project itself, not
@@ -96,6 +97,11 @@ export function TuscanyTimer({ project }: BlockProps<"timer">) {
               <div className="mt-1 text-xs tracking-wide uppercase opacity-70">{label}</div>
             </div>
           ))}
+        </div>
+        {/* Pretty per-template date calendar — competitors have this, we
+            previously only showed the plain countdown (see feedback). */}
+        <div className="mt-8">
+          <WeddingCalendar date={project.weddingDate} />
         </div>
       </div>
     </Section>

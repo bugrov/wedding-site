@@ -16,6 +16,7 @@ const rsvpFormSchema = z.object({
   // parse/bound-check the real number.
   headcount: z.string().optional(),
   food: z.string().optional(),
+  drink: z.string().optional(),
   plusOne: z.string().optional(),
   comment: z.string().optional(),
 });
@@ -28,7 +29,12 @@ type RsvpFormValues = z.infer<typeof rsvpFormSchema>;
 const inputClassName =
   "mt-1 min-h-11 w-full rounded-sm border border-black/35 bg-white px-3 py-2 text-sm";
 
-export function TuscanyRsvp({ content }: BlockProps<"rsvp">) {
+const deadlineFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "numeric",
+  month: "long",
+});
+
+export function TuscanyRsvp({ content, previewMode }: BlockProps<"rsvp">) {
   const {
     register,
     handleSubmit,
@@ -54,6 +60,11 @@ export function TuscanyRsvp({ content }: BlockProps<"rsvp">) {
       <DisplayHeading as="h2" className="mt-3 text-3xl md:text-4xl">
         Будете с нами?
       </DisplayHeading>
+      {content.deadline && !Number.isNaN(new Date(content.deadline).getTime()) && (
+        <p className="mt-2 text-sm text-(--color-text)/70">
+          Просим ответить до {deadlineFormatter.format(new Date(content.deadline))}
+        </p>
+      )}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="mx-auto mt-8 max-w-sm space-y-4 text-left"
@@ -115,6 +126,15 @@ export function TuscanyRsvp({ content }: BlockProps<"rsvp">) {
               </div>
             )}
 
+            {content.askDrink && (
+              <div>
+                <label className="block text-sm font-medium" htmlFor="rsvp-drink">
+                  Пожелания по напиткам
+                </label>
+                <input id="rsvp-drink" {...register("drink")} className={inputClassName} />
+              </div>
+            )}
+
             {content.askPlusOne && (
               <div>
                 <label className="block text-sm font-medium" htmlFor="rsvp-plusone">
@@ -142,10 +162,11 @@ export function TuscanyRsvp({ content }: BlockProps<"rsvp">) {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || previewMode}
+          title={previewMode ? "Это предпросмотр — форма здесь не отправляется" : undefined}
           className="min-h-11 w-full rounded-sm bg-(--color-primary) px-4 py-2 text-sm font-medium text-(--color-background) transition hover:opacity-90 disabled:opacity-50"
         >
-          {isSubmitting ? "Отправляем…" : "Отправить"}
+          {isSubmitting ? "Отправляем…" : previewMode ? "Предпросмотр" : "Отправить"}
         </button>
       </form>
     </Section>

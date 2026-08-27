@@ -16,6 +16,7 @@ export {
   dressCodeContentSchema,
   galleryContentSchema,
   wishesContentSchema,
+  chatContentSchema,
   rsvpContentSchema,
   createDefaultBlocksConfig,
   type BlockType,

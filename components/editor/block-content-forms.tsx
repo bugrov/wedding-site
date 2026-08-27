@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, ImageOff } from "lucide-react";
+import { Plus, Trash2, ImageOff, ExternalLink } from "lucide-react";
 import type { CoverContent, BlockContent, BlockFeatures } from "@/lib/blocks";
 
 // Shared by every per-block form below, and (once step 6 builds it) the
@@ -119,6 +119,24 @@ export function StoryForm({
   value: BlockContent<"story">;
   onChange: (next: BlockContent<"story">) => void;
 }) {
+  // Up to 2 — matches the collage-2 layout this block renders into (see
+  // components/templates/tuscany/story.tsx). Both optional: a couple may not
+  // want a photo here at all.
+  const photos = value.photos ?? [];
+
+  const updatePhoto = (index: number, url: string) => {
+    onChange({ ...value, photos: photos.map((p, i) => (i === index ? url : p)) });
+  };
+
+  const removePhoto = (index: number) => {
+    onChange({ ...value, photos: photos.filter((_, i) => i !== index) });
+  };
+
+  const addPhoto = () => {
+    if (photos.length >= 2) return;
+    onChange({ ...value, photos: [...photos, ""] });
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -130,11 +148,37 @@ export function StoryForm({
           className={fieldClassName}
         />
       </div>
-      <PhotoUrlField
-        label="Фото (ссылка)"
-        value={value.photoUrl ?? ""}
-        onChange={(photoUrl) => onChange({ ...value, photoUrl })}
-      />
+      <div>
+        <label className="block text-sm font-medium">Фото (до 2, необязательно)</label>
+        <div className="mt-2 space-y-2">
+          {photos.map((photo, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                value={photo}
+                onChange={(e) => updatePhoto(i, e.target.value)}
+                placeholder="https://..."
+                className={fieldClassName}
+              />
+              {photo && <PhotoThumbnail key={photo} src={photo} />}
+              <button
+                type="button"
+                onClick={() => removePhoto(i)}
+                aria-label="Удалить фото"
+                className={removeButtonClassName}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+          ))}
+          {photos.length > 0 && <p className="text-xs text-black/40">{photoUrlFailHint}</p>}
+          {photos.length < 2 && (
+            <button type="button" onClick={addPhoto} className={`${addButtonClassName} w-full`}>
+              <Plus className="h-4 w-4" aria-hidden />
+              Добавить фото
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -227,12 +271,25 @@ export function VenueForm({
       </div>
       <div>
         <label className="block text-sm font-medium">Ссылка на карту (необязательно)</label>
-        <input
-          value={value.mapUrl ?? ""}
-          onChange={(e) => onChange({ ...value, mapUrl: e.target.value })}
-          placeholder="https://..."
-          className={fieldClassName}
-        />
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            value={value.mapUrl ?? ""}
+            onChange={(e) => onChange({ ...value, mapUrl: e.target.value })}
+            placeholder="https://..."
+            className={`${fieldClassName} mt-0`}
+          />
+          {value.mapUrl && (
+            <a
+              href={value.mapUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-sm border border-black/20 px-3 text-sm hover:bg-black/5"
+            >
+              <ExternalLink className="h-4 w-4" aria-hidden />
+              Проверить
+            </a>
+          )}
+        </div>
       </div>
       <div>
         <label className="block text-sm font-medium">Описание площадки (необязательно)</label>
@@ -265,7 +322,7 @@ export function DressCodeForm({
   };
 
   const addColor = () => {
-    if (palette.length >= 8) return;
+    if (palette.length >= 10) return;
     onChange({ ...value, palette: [...palette, "#9C6B30"] });
   };
 
@@ -282,34 +339,35 @@ export function DressCodeForm({
       </div>
       <div>
         <label className="block text-sm font-medium">Цветовая палитра (необязательно)</label>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+        <div className="mt-2 space-y-2">
           {palette.map((color, i) => (
-            <div key={i} className="flex items-center gap-1">
+            <div key={i} className="flex items-center gap-2">
               <input
                 type="color"
                 value={color}
                 onChange={(e) => updateColor(i, e.target.value)}
-                className="h-9 w-9 cursor-pointer rounded-sm border border-black/20"
+                className="h-11 w-11 shrink-0 cursor-pointer rounded-sm border border-black/20"
                 aria-label={`Цвет ${i + 1}`}
+              />
+              <input
+                value={color}
+                onChange={(e) => updateColor(i, e.target.value)}
+                className={`${fieldClassName} mt-0 font-mono uppercase`}
               />
               <button
                 type="button"
                 onClick={() => removeColor(i)}
                 aria-label="Удалить цвет"
-                className="text-black/50 hover:text-black"
+                className={removeButtonClassName}
               >
                 <Trash2 className="h-4 w-4" aria-hidden />
               </button>
             </div>
           ))}
-          {palette.length < 8 && (
-            <button
-              type="button"
-              onClick={addColor}
-              aria-label="Добавить цвет"
-              className="flex h-9 w-9 items-center justify-center rounded-sm border border-dashed border-black/30 hover:bg-black/5"
-            >
+          {palette.length < 10 && (
+            <button type="button" onClick={addColor} className={`${addButtonClassName} w-full`}>
               <Plus className="h-4 w-4" aria-hidden />
+              Добавить цвет
             </button>
           )}
         </div>
@@ -463,25 +521,83 @@ export function RsvpForm({
   value: BlockContent<"rsvp">;
   onChange: (next: BlockContent<"rsvp">) => void;
 }) {
-  const options: [keyof BlockContent<"rsvp">, string][] = [
+  const options: ["askFood" | "askDrink" | "askPlusOne" | "askComment", string][] = [
     ["askFood", "Спрашивать пожелания по питанию"],
+    ["askDrink", "Спрашивать пожелания по напиткам"],
     ["askPlusOne", "Спрашивать про +1"],
     ["askComment", "Спрашивать комментарий"],
   ];
 
   return (
-    <div className="space-y-2">
-      {options.map(([key, label]) => (
-        <label key={key} className="flex min-h-11 items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            checked={value[key]}
-            onChange={(e) => onChange({ ...value, [key]: e.target.checked })}
-            className="h-4 w-4 accent-(--color-primary)"
-          />
-          {label}
+    <div className="space-y-4">
+      <div className="space-y-2">
+        {options.map(([key, label]) => (
+          <label key={key} className="flex min-h-11 items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={value[key]}
+              onChange={(e) => onChange({ ...value, [key]: e.target.checked })}
+              className="h-4 w-4 accent-(--color-primary)"
+            />
+            {label}
+          </label>
+        ))}
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Ответить до какой даты (необязательно)</label>
+        <input
+          type="date"
+          value={value.deadline ?? ""}
+          onChange={(e) => onChange({ ...value, deadline: e.target.value })}
+          className={fieldClassName}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function ChatForm({
+  value,
+  onChange,
+}: {
+  value: BlockContent<"chat">;
+  onChange: (next: BlockContent<"chat">) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium">Текст</label>
+        <textarea
+          rows={3}
+          value={value.text}
+          onChange={(e) => onChange({ ...value, text: e.target.value })}
+          className={fieldClassName}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">
+          Ссылка на чат (Telegram, WhatsApp и т.д.)
         </label>
-      ))}
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            value={value.link ?? ""}
+            onChange={(e) => onChange({ ...value, link: e.target.value })}
+            placeholder="https://..."
+            className={`${fieldClassName} mt-0`}
+          />
+          {value.link && (
+            <a
+              href={value.link}
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-sm border border-black/20 px-3 text-sm hover:bg-black/5"
+            >
+              <ExternalLink className="h-4 w-4" aria-hidden />
+              Проверить
+            </a>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

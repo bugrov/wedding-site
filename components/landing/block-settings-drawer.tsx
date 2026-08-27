@@ -20,6 +20,7 @@ import {
   DressCodeForm,
   GalleryForm,
   WishesForm,
+  ChatForm,
   RsvpForm,
   FeaturesForm,
 } from "@/components/editor/block-content-forms";
@@ -48,6 +49,8 @@ function BlockForm({
       return <GalleryForm value={content as BlockContent<"gallery">} onChange={onChange} />;
     case "wishes":
       return <WishesForm value={content as BlockContent<"wishes">} onChange={onChange} />;
+    case "chat":
+      return <ChatForm value={content as BlockContent<"chat">} onChange={onChange} />;
     case "rsvp":
       return <RsvpForm value={content as BlockContent<"rsvp">} onChange={onChange} />;
     case "timer":
@@ -122,7 +125,10 @@ export function BlockSettingsDrawer({
           engages once this point in the page scrolls into that position, and
           releases once its container (the full-page preview below it)
           scrolls past — never competing with the header. */}
-      <div className="sticky top-20 z-40 mx-auto flex w-full max-w-5xl justify-end px-6">
+      <div className="sticky top-20 z-40 mx-auto mb-6 flex w-full max-w-5xl justify-end px-6">
+        {/* mb-6: before the first scroll, this sits in normal flow right
+            above the preview with nothing separating them (cramped/glued —
+            see feedback); the margin holds regardless of stuck state. */}
         <button
           type="button"
           onClick={() => onOpenChange(true)}

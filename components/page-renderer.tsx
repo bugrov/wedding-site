@@ -17,11 +17,13 @@ export function PageRenderer({
   project,
   blocksConfig,
   colorTokens,
+  previewMode,
 }: {
   templateId: string;
   project: ProjectSummary;
   blocksConfig: BlocksConfig;
   colorTokens?: ColorTokens;
+  previewMode?: boolean;
 }) {
   const template = TEMPLATES[templateId];
   if (!template) {
@@ -45,7 +47,14 @@ export function PageRenderer({
         if (!content) return null;
         // Each key of `content` is only ever read by the matching block
         // renderer for that same key, so this is sound despite the cast.
-        return <Block key={type} project={project} content={content as never} />;
+        return (
+          <Block
+            key={type}
+            project={project}
+            content={content as never}
+            previewMode={previewMode}
+          />
+        );
       })}
     </ThemeWrapper>
   );

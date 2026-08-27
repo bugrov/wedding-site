@@ -8,6 +8,7 @@ import { TuscanyVenue } from "./venue";
 import { TuscanyDressCode } from "./dresscode";
 import { TuscanyGallery } from "./gallery";
 import { TuscanyWishes } from "./wishes";
+import { TuscanyChat } from "./chat";
 import { TuscanyRsvp } from "./rsvp";
 
 export const tuscanyTemplate: TemplateDefinition = {
@@ -23,6 +24,7 @@ export const tuscanyTemplate: TemplateDefinition = {
     dresscode: TuscanyDressCode,
     gallery: TuscanyGallery,
     wishes: TuscanyWishes,
+    chat: TuscanyChat,
     rsvp: TuscanyRsvp,
   },
 };

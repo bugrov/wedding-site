@@ -19,6 +19,11 @@ export type CoverProps = {
 export type BlockProps<T extends BlockType> = {
   project: ProjectSummary;
   content: BlockContent<T>;
+  /** True in the public configurator's live preview — never a real guest
+   * visiting a published site. Blocks with a real side-effecting action
+   * (RSVP submit) should disable it here instead of letting a lead visitor
+   * think they actually submitted something. */
+  previewMode?: boolean;
 };
 
 /**

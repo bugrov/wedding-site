@@ -196,6 +196,7 @@ export function Configurator() {
           templateId={templateId}
           project={previewProject}
           blocksConfig={blocksConfig}
+          previewMode
         />
       </div>
 

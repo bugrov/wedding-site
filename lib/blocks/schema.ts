@@ -33,6 +33,7 @@ export const BLOCK_TYPES = [
   "dresscode",
   "gallery",
   "wishes",
+  "chat",
   "rsvp",
 ] as const;
 
@@ -46,6 +47,7 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   dresscode: "Дресс-код",
   gallery: "Галерея",
   wishes: "Пожелания и подарки",
+  chat: "Общий чат",
   rsvp: "RSVP-форма",
 };
 
@@ -66,7 +68,9 @@ export const timerContentSchema = z.object({});
 
 export const storyContentSchema = z.object({
   text: z.string().min(1, "Добавьте текст истории").max(4000, "Слишком длинный текст"),
-  photoUrl: httpUrlSchema.optional(),
+  // Up to 2 — matches the collage-2 layout this block renders into. Optional:
+  // a couple may not want any photo here at all.
+  photos: z.array(httpUrlSchema).max(2, "Не более 2 фото").optional(),
 });
 
 export const scheduleItemSchema = z.object({
@@ -91,7 +95,7 @@ export const venueContentSchema = z.object({
 
 export const dressCodeContentSchema = z.object({
   text: z.string().min(1, "Добавьте описание дресс-кода").max(1000, "Слишком длинный текст"),
-  palette: z.array(z.string()).max(8, "Не более 8 цветов").optional(),
+  palette: z.array(z.string()).max(10, "Не более 10 цветов").optional(),
 });
 
 export const galleryContentSchema = z.object({
@@ -105,8 +109,21 @@ export const wishesContentSchema = z.object({
 
 export const rsvpContentSchema = z.object({
   askFood: z.boolean().default(true),
+  askDrink: z.boolean().default(true),
   askPlusOne: z.boolean().default(true),
   askComment: z.boolean().default(true),
+  // Plain date string (not z.coerce.date()) — same reason as elsewhere in
+  // this schema: this is filled via a native date input and read back as a
+  // string, never needs to be a real Date on this side.
+  deadline: z.string().optional(),
+});
+
+export const chatContentSchema = z.object({
+  text: z
+    .string()
+    .max(500, "Слишком длинный текст")
+    .default("Закрытый чат для гостей — здесь можно обсудить детали и задать вопросы."),
+  link: httpUrlSchema.optional(),
 });
 
 export const blockContentSchemas = {
@@ -117,6 +134,7 @@ export const blockContentSchemas = {
   dresscode: dressCodeContentSchema,
   gallery: galleryContentSchema,
   wishes: wishesContentSchema,
+  chat: chatContentSchema,
   rsvp: rsvpContentSchema,
 } as const;
 
@@ -144,7 +162,10 @@ export const DEFAULT_BLOCK_CONTENT: { [K in BlockType]: BlockContent<K> } = {
   wishes: {
     text: "Ваше присутствие — главный подарок для нас. Но если хотите порадовать чем-то ещё, будем благодарны конвертам с добрыми пожеланиями.",
   },
-  rsvp: { askFood: true, askPlusOne: true, askComment: true },
+  chat: {
+    text: "Закрытый чат для гостей — здесь можно обсудить детали и задать вопросы.",
+  },
+  rsvp: { askFood: true, askDrink: true, askPlusOne: true, askComment: true },
 };
 
 // --- Cross-cutting features (not a position in the page, just a toggle) --
@@ -183,6 +204,7 @@ export const blocksConfigSchema = z.object({
       dresscode: dressCodeContentSchema.optional(),
       gallery: galleryContentSchema.optional(),
       wishes: wishesContentSchema.optional(),
+      chat: chatContentSchema.optional(),
       rsvp: rsvpContentSchema.optional(),
     })
     .default({}),
