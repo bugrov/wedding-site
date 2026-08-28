@@ -1,28 +1,8 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
 import { Section, Eyebrow, DisplayHeading } from "@/components/primitives";
 import type { BlockProps } from "@/lib/templates/types";
-import { useRsvpMutation } from "@/lib/hooks/use-rsvp-mutation";
-
-const rsvpFormSchema = z.object({
-  name: z.string().min(1, "Введите имя"),
-  attending: z.enum(["yes", "no"]),
-  // Plain string, not z.coerce.number() — avoids fighting react-hook-form's
-  // resolver typing over input-vs-output types for a field this form only
-  // stubs for now (see TODO below); server-side validation in step 7 will
-  // parse/bound-check the real number.
-  headcount: z.string().optional(),
-  food: z.string().optional(),
-  drink: z.string().optional(),
-  plusOne: z.string().optional(),
-  comment: z.string().optional(),
-});
-
-type RsvpFormValues = z.infer<typeof rsvpFormSchema>;
+import { useRsvpForm } from "@/lib/hooks/use-rsvp-form";
 
 // min-h-11 (44px) + border/20->35: WCAG touch-target size + component-boundary
 // contrast, found via the ui-ux-pro-max audit — text inputs were ~36px tall
@@ -36,45 +16,7 @@ const deadlineFormatter = new Intl.DateTimeFormat("ru-RU", {
 });
 
 export function TuscanyRsvp({ project, content, previewMode }: BlockProps<"rsvp">) {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<RsvpFormValues>({
-    resolver: zodResolver(rsvpFormSchema),
-    defaultValues: { attending: "yes" },
-  });
-
-  const attending = watch("attending");
-
-  const rsvpMutation = useRsvpMutation();
-
-  const onSubmit = async (data: RsvpFormValues) => {
-    // project.id is only set on a real published site (see
-    // lib/templates/types.ts) — previewMode being true everywhere else
-    // already disables this button, so reaching here without it would mean
-    // that guard broke, not a case worth a user-facing error message.
-    if (!project.id) return;
-
-    try {
-      await rsvpMutation.mutateAsync({
-        projectId: project.id,
-        name: data.name,
-        attending: data.attending === "yes",
-        headcount: data.headcount || undefined,
-        foodPref: data.food || undefined,
-        drinkPref: data.drink || undefined,
-        plusOneName: data.plusOne || undefined,
-        comment: data.comment || undefined,
-      });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Не удалось отправить ответ");
-      return;
-    }
-
-    toast.success("Спасибо! Ваш ответ получен.");
-  };
+  const { register, errors, isSubmitting, attending, onSubmit } = useRsvpForm(project.id);
 
   return (
     <Section bleed="contained" className="text-center">
@@ -90,11 +32,7 @@ export function TuscanyRsvp({ project, content, previewMode }: BlockProps<"rsvp"
           Просим ответить до {deadlineFormatter.format(new Date(content.deadline))}
         </p>
       )}
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="mx-auto mt-8 max-w-sm space-y-4 text-left"
-        noValidate
-      >
+      <form onSubmit={onSubmit} className="mx-auto mt-8 max-w-sm space-y-4 text-left" noValidate>
         <div>
           <label className="block text-sm font-medium" htmlFor="rsvp-name">
             Ваше имя

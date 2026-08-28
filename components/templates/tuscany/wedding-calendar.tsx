@@ -1,4 +1,5 @@
 import { BotanicalSprig, DividerLine } from "@/components/primitives";
+import { CALENDAR_WEEKDAY_LABELS, CALENDAR_MONTH_NAMES, getMonthGrid } from "@/lib/calendar-grid";
 
 // A small decorative month calendar with the wedding day circled — the
 // "pretty calendar" competitors have that we didn't (see feedback). Styled
@@ -7,35 +8,8 @@ import { BotanicalSprig, DividerLine } from "@/components/primitives";
 // version read as "too simple"; this borrows the recurring Pinterest
 // reference pattern (hand-drawn ink circle around the date, a botanical
 // corner sprig, a script-leaning month label) instead of a solid filled dot.
-// Each template gets its own visual take on the same date-grid logic below.
-const WEEKDAY_LABELS = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
-
-const MONTH_NAMES = [
-  "Январь",
-  "Февраль",
-  "Март",
-  "Апрель",
-  "Май",
-  "Июнь",
-  "Июль",
-  "Август",
-  "Сентябрь",
-  "Октябрь",
-  "Ноябрь",
-  "Декабрь",
-];
-
-function getMonthGrid(date: Date): (number | null)[] {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Monday-first
-
-  const cells: (number | null)[] = Array.from({ length: firstWeekday }, () => null);
-  for (let day = 1; day <= daysInMonth; day++) cells.push(day);
-  while (cells.length % 7 !== 0) cells.push(null);
-  return cells;
-}
+// Each template gets its own visual take on the same date-grid logic
+// (lib/calendar-grid.ts).
 
 // A single fixed "hand-drawn" ellipse path (not a perfect circle) standing
 // in for a pen mark circling the date — irregular on purpose, echoing the
@@ -60,14 +34,14 @@ export function WeddingCalendar({ date }: { date: Date }) {
     <div className="relative mx-auto w-full max-w-[300px] -rotate-1 rounded-sm bg-(--color-background) px-6 pt-7 pb-6 text-(--color-text) shadow-xl">
       <BotanicalSprig className="absolute -top-3 -right-2 h-8 w-5 rotate-[20deg] text-(--color-accent)/60" />
       <p className="text-center text-2xl italic" style={{ fontFamily: "var(--font-display)" }}>
-        {MONTH_NAMES[date.getMonth()]}
+        {CALENDAR_MONTH_NAMES[date.getMonth()]}
       </p>
       <p className="mt-0.5 text-center text-[11px] tracking-[0.25em] text-(--color-text)/50 uppercase">
         {date.getFullYear()}
       </p>
       <DividerLine className="mx-auto mt-3 mb-4 w-10" />
       <div className="grid grid-cols-7 gap-y-2 text-center text-xs">
-        {WEEKDAY_LABELS.map((label) => (
+        {CALENDAR_WEEKDAY_LABELS.map((label) => (
           <span key={label} className="tracking-wide text-(--color-text)/40">
             {label}
           </span>

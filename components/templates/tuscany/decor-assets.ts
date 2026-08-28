@@ -11,6 +11,8 @@ export const TUSCANY_DECOR = {
   /** Timer section background — wedding table with olive branches + candles. */
   timerBackground:
     "https://images.pexels.com/photos/37066399/pexels-photo-37066399/free-photo-of-elegant-wedding-table-setting-in-tuscany.jpeg",
-  /** Dress-code section accent — bridal bouquet, eucalyptus + white florals. */
-  dressCodeAccent: "https://images.unsplash.com/photo-1595467959554-9ffcbf37f10f",
+  /** Schedule section background — rustic table setting, gold cutlery, olive
+   * sprig (picked over a "rings on olive branch" alternative after comparing
+   * both live). */
+  scheduleBackground: "https://images.pexels.com/photos/4618516/pexels-photo-4618516.jpeg",
 } as const;

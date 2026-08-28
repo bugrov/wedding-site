@@ -1,17 +1,19 @@
 import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primitives";
 import type { BlockProps } from "@/lib/templates/types";
 
-// Was a photo+text split with a bouquet accent photo — dropped per
-// feedback ("как будто ни к чему"; the background-texture treatment on
-// Schedule reads better than a side accent photo here). Centered text only.
-export function TuscanyDressCode({ content }: BlockProps<"dresscode">) {
+// No dedicated dress-code stock photo for this direction (see plan's
+// per-template decor-asset list — Old Money only calls for the
+// envelope+seal on Timer) — centered text only, kept formal via the border
+// rule rather than an image split.
+export function OldMoneyDressCode({ content }: BlockProps<"dresscode">) {
   return (
     <Section bleed="contained" className="text-center">
       <Eyebrow>Дресс-код</Eyebrow>
       <DisplayHeading as="h2" className="mt-3 text-3xl md:text-4xl">
         Стиль вечера
       </DisplayHeading>
-      <BodyText className="mx-auto mt-4 max-w-lg" font="display">
+      <div className="mx-auto mt-4 h-px w-10 bg-(--color-accent)" />
+      <BodyText className="mx-auto mt-6 max-w-lg" font="display">
         {content.text}
       </BodyText>
       {content.palette && content.palette.length > 0 && (

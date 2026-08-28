@@ -1,22 +1,22 @@
 import Image from "next/image";
-import { Section, Eyebrow, DisplayHeading, BodyText, DividerLine } from "@/components/primitives";
+import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primitives";
 import type { BlockProps } from "@/lib/templates/types";
-import { TUSCANY_DECOR } from "./decor-assets";
+import { OLD_MONEY_DECOR } from "./decor-assets";
 
-// Full-bleed rustic-table-setting background (see plan: template-level
-// atmospheric photo, candidates presented and compared live — approved
-// separately from Old Money's own schedule background, see decor-assets.ts).
-// opacity-35 + a /40 cream wash: a photo this detailed (plate, cutlery,
-// glassware) needs to stay much fainter than Old Money's flat paper texture
-// for the schedule text to read clearly over it.
-export function TuscanySchedule({ content }: BlockProps<"schedule">) {
+// Full-bleed aged-paper texture behind the section (see plan: template-level
+// atmospheric texture, approved via the asset process). opacity-80 on the
+// image + a lighter /40 wash (not /75) — the first pass was nearly invisible
+// (see feedback) because a heavy overlay was hiding a faint image; the
+// texture itself was picked specifically for having no dark vignette, so it
+// can run strong without hurting text legibility.
+export function OldMoneySchedule({ content }: BlockProps<"schedule">) {
   return (
     <Section bleed="full" className="relative overflow-hidden text-center">
       <Image
-        src={TUSCANY_DECOR.scheduleBackground}
+        src={OLD_MONEY_DECOR.scheduleBackground}
         alt=""
         fill
-        className="object-cover opacity-[0.35]"
+        className="object-cover opacity-80"
         sizes="100vw"
       />
       <div className="absolute inset-0 bg-(--color-background)/40" aria-hidden />
@@ -42,7 +42,9 @@ export function TuscanySchedule({ content }: BlockProps<"schedule">) {
                   {item.description}
                 </BodyText>
               )}
-              {i < content.items.length - 1 && <DividerLine className="mx-auto mt-6" />}
+              {i < content.items.length - 1 && (
+                <div className="mx-auto mt-6 h-px w-10 bg-(--color-accent)/50" />
+              )}
             </div>
           ))}
         </div>
