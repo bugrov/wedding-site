@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { rsvpSchema } from "@/lib/schemas/rsvp";
 import { ProjectStatus } from "@/app/generated/prisma/client";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
 
   const project = await prisma.project.findUnique({
     where: { id: data.projectId },
-    select: { status: true, publishedAt: true },
+    select: { status: true, publishedAt: true, telegramChatId: true },
   });
 
   // Not just "does this project exist" — an unpublished project shouldn't
@@ -69,6 +70,19 @@ export async function POST(request: Request) {
     await prisma.rsvpResponse.update({ where: { id: existing.id }, data: responseData });
   } else {
     await prisma.rsvpResponse.create({ data: responseData });
+  }
+
+  if (project.telegramChatId) {
+    const lines = [
+      `${existing ? "Отклик обновлён" : "Новый отклик"}: ${normalizedName}`,
+      data.attending ? `Придёт, кол-во: ${headcount}` : "Не сможет прийти",
+      data.plusOneName ? `Пара: ${data.plusOneName}` : null,
+      data.foodPref ? `Питание: ${data.foodPref}` : null,
+      data.drinkPref ? `Напитки: ${data.drinkPref}` : null,
+      data.comment ? `Комментарий: ${data.comment}` : null,
+    ].filter((line): line is string => line !== null);
+
+    await sendTelegramMessage(project.telegramChatId, lines.join("\n"));
   }
 
   return NextResponse.json({ ok: true });

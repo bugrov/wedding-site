@@ -44,6 +44,11 @@ export default async function ClientDashboardPage({
   const notAttending = responses.filter((r) => !r.attending);
   const totalGuests = attending.reduce((sum, r) => sum + r.headcount, 0);
 
+  // Absent in local dev until a real bot is registered with @BotFather (see
+  // .env.example) — the whole section just doesn't render rather than
+  // showing a broken/dead link.
+  const botUsername = process.env.TELEGRAM_BOT_USERNAME || null;
+
   return (
     <main className="min-h-screen bg-neutral-50">
       <div className="mx-auto max-w-4xl space-y-8 p-8">
@@ -55,6 +60,30 @@ export default async function ClientDashboardPage({
             Свадьба {dateFormatter.format(project.weddingDate)} · список откликов гостей
           </p>
         </div>
+
+        {botUsername && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white p-4">
+            {project.telegramChatId ? (
+              <p className="text-sm text-neutral-700">
+                Telegram-уведомления о новых откликах подключены
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-neutral-700">
+                  Получайте уведомление в Telegram о каждом новом отклике гостя
+                </p>
+                <a
+                  href={`https://t.me/${botUsername}?start=${token}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="cursor-pointer rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                >
+                  Подключить
+                </a>
+              </>
+            )}
+          </div>
+        )}
 
         {/* The one number this whole page exists to answer clearly (see
             feedback: "не пойму, какой мне итог считать чтоб отдать в
