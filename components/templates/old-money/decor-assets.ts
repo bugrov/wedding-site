@@ -9,4 +9,10 @@ export const OLD_MONEY_DECOR = {
   /** Schedule section background — light aged-paper texture, no dark vignette
    * (picked specifically so body text stays readable over it at low opacity). */
   scheduleBackground: "https://images.pexels.com/photos/16557322/pexels-photo-16557322.jpeg",
+  /** Cover background — vintage crochet/lace texture, sits under a burgundy
+   * tint behind the oval vignette card. */
+  coverBackground: "https://images.pexels.com/photos/6276025/pexels-photo-6276025.jpeg",
+  /** RSVP background — vintage cream convertible, envelope+seal card sits
+   * on the hood. */
+  rsvpBackground: "https://images.pexels.com/photos/12243338/pexels-photo-12243338.jpeg",
 } as const;

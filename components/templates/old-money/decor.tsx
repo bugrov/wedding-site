@@ -44,3 +44,44 @@ export function SealMark({ className }: { className?: string }) {
     </svg>
   );
 }
+
+// A scalloped (doily-edged) oval outline — the Cover's signature vignette
+// per the reference (an engraved-invitation oval with a fluted paper edge)
+// instead of the plain rectangular bordered card. Drawn as a sampled path
+// rather than a fixed asset so it scales cleanly to any card size.
+export function ScallopedOval({
+  className,
+  scallops = 22,
+  amplitude = 4,
+}: {
+  className?: string;
+  scallops?: number;
+  amplitude?: number;
+}) {
+  const w = 240;
+  const h = 320;
+  const cx = w / 2;
+  const cy = h / 2;
+  const rx = w / 2 - amplitude - 3;
+  const ry = h / 2 - amplitude - 3;
+  const steps = 240;
+  const points = Array.from({ length: steps + 1 }, (_, i) => {
+    const t = i / steps;
+    const theta = t * 2 * Math.PI;
+    const wobble = amplitude * Math.cos(scallops * theta);
+    const x = cx + (rx + wobble) * Math.cos(theta);
+    const y = cy + (ry + wobble) * Math.sin(theta);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+
+  return (
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      className={cn("text-(--color-accent)", className)}
+      aria-hidden
+    >
+      <polygon points={points} fill="none" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
