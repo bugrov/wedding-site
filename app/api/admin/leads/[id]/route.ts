@@ -33,7 +33,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ ok: true });
   }
 
-  const slug = await generateUniqueSlug(lead.groomName, lead.brideName);
+  const slug = await generateUniqueSlug(lead.groomName, lead.brideName, lead.weddingDate);
   const clientAccessToken = randomBytes(24).toString("hex");
 
   const project = await prisma.$transaction(async (tx) => {
