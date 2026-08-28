@@ -46,11 +46,19 @@ export async function POST(request: Request) {
     where: { projectId: data.projectId, name: { equals: normalizedName, mode: "insensitive" } },
   });
 
+  // A named pair always counts as at least 2, regardless of what the guest
+  // typed into headcount — that field and plusOneName are two separate
+  // inputs on the form, easy to fill one and forget the other (see feedback:
+  // client couldn't tell which number to give the venue for exactly this
+  // mismatch). max(), not an override, so families larger than a pair can
+  // still report their real headcount.
+  const headcount = data.plusOneName ? Math.max(data.headcount ?? 1, 2) : (data.headcount ?? 1);
+
   const responseData = {
     projectId: data.projectId,
     name: normalizedName,
     attending: data.attending,
-    headcount: data.headcount ?? 1,
+    headcount,
     foodPref: data.foodPref || null,
     drinkPref: data.drinkPref || null,
     plusOneName: data.plusOneName || null,

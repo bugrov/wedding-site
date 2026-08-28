@@ -139,7 +139,7 @@ export function TuscanyRsvp({ project, content, previewMode }: BlockProps<"rsvp"
 
             <div>
               <label className="block text-sm font-medium" htmlFor="rsvp-headcount">
-                Сколько человек (с вами)
+                Сколько человек, включая вас
               </label>
               <input
                 id="rsvp-headcount"
