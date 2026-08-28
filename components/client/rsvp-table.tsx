@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import type { RsvpResponse } from "@/app/generated/prisma/client";
+import { useDeleteRsvpMutation } from "@/lib/hooks/use-delete-rsvp-mutation";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
   day: "numeric",
@@ -54,23 +53,7 @@ function DeleteButton({ onConfirm }: { onConfirm: () => void }) {
 }
 
 export function RsvpTable({ token, responses }: { token: string; responses: RsvpResponse[] }) {
-  const router = useRouter();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  const handleDelete = async (id: string) => {
-    setDeletingId(id);
-    try {
-      const res = await fetch(`/api/client/${token}/rsvp/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        toast.error("Не удалось удалить запись");
-        return;
-      }
-      toast.success("Запись удалена");
-      router.refresh();
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  const deleteMutation = useDeleteRsvpMutation(token);
 
   return (
     <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
@@ -90,7 +73,14 @@ export function RsvpTable({ token, responses }: { token: string; responses: Rsvp
         </thead>
         <tbody className="divide-y divide-neutral-100">
           {responses.map((r) => (
-            <tr key={r.id} className={deletingId === r.id ? "opacity-50" : undefined}>
+            <tr
+              key={r.id}
+              className={
+                deleteMutation.isPending && deleteMutation.variables === r.id
+                  ? "opacity-50"
+                  : undefined
+              }
+            >
               <td className="px-4 py-3 font-medium text-neutral-900">{r.name}</td>
               <td className="px-4 py-3">
                 <span
@@ -112,7 +102,7 @@ export function RsvpTable({ token, responses }: { token: string; responses: Rsvp
                 {dateTimeFormatter.format(r.createdAt)}
               </td>
               <td className="px-4 py-3">
-                <DeleteButton onConfirm={() => handleDelete(r.id)} />
+                <DeleteButton onConfirm={() => deleteMutation.mutate(r.id)} />
               </td>
             </tr>
           ))}

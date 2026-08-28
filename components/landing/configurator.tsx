@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useLeadMutation } from "@/lib/hooks/use-lead-mutation";
 import {
   BLOCK_TYPES,
   DEFAULT_BLOCK_ORDER,
@@ -117,6 +118,8 @@ export function Configurator() {
     return nextErrors;
   };
 
+  const leadMutation = useLeadMutation();
+
   const onSubmit = async (data: ContactFormValues) => {
     const nextMainErrors = validateMainFields();
     if (Object.keys(nextMainErrors).length > 0) {
@@ -127,21 +130,17 @@ export function Configurator() {
     }
     setMainFieldErrors({});
 
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await leadMutation.mutateAsync({
         ...data,
         groomName,
         brideName,
         weddingDate,
         templateId,
         blocksConfig,
-      }),
-    });
-
-    if (!res.ok) {
-      toast.error("Не удалось отправить заявку. Попробуйте ещё раз.");
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось отправить заявку");
       return;
     }
 

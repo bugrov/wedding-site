@@ -1,13 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { loginSchema, type LoginInput } from "@/lib/schemas/auth";
+import { useLoginMutation } from "@/lib/hooks/use-login-mutation";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -16,24 +15,13 @@ export default function AdminLoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
+  const loginMutation = useLoginMutation();
+
   const onSubmit = async (data: LoginInput) => {
     try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        toast.error(body?.error ?? "Не удалось войти. Попробуйте ещё раз.");
-        return;
-      }
-
-      router.push("/admin/dashboard");
-      router.refresh();
-    } catch {
-      toast.error("Не удалось связаться с сервером. Проверьте соединение и попробуйте ещё раз.");
+      await loginMutation.mutateAsync(data);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось войти. Попробуйте ещё раз.");
     }
   };
 

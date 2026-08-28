@@ -15,6 +15,10 @@ import {
 import { PageRenderer } from "@/components/page-renderer";
 import { BlockSettingsDrawer } from "@/components/landing/block-settings-drawer";
 import type { ProjectStatus } from "@/app/generated/prisma/client";
+import {
+  useSaveProjectMutation,
+  usePublishProjectMutation,
+} from "@/lib/hooks/use-project-mutations";
 
 const STATUS_OPTIONS: [ProjectStatus, string][] = [
   ["IN_PROGRESS", "В работе"],
@@ -73,8 +77,8 @@ export function ProjectEditor({
   );
   const [features, setFeatures] = useState<BlockFeatures>(initialBlocksConfig.features);
   const [mainFieldErrors, setMainFieldErrors] = useState<MainFieldErrors>({});
-  const [saving, setSaving] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  const saveMutation = useSaveProjectMutation(project.id);
+  const publishMutation = usePublishProjectMutation(project.id);
 
   const blocksConfig: BlocksConfig = useMemo(() => {
     const order = DEFAULT_BLOCK_ORDER.filter((b) => enabledBlocks.includes(b));
@@ -127,45 +131,37 @@ export function ProjectEditor({
     }
     setMainFieldErrors({});
 
-    const res = await fetch(`/api/admin/projects/${project.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ groomName, brideName, weddingDate, templateId, status, blocksConfig }),
-    });
-
-    if (!res.ok) {
-      toast.error("Не удалось сохранить изменения");
+    try {
+      await saveMutation.mutateAsync({
+        groomName,
+        brideName,
+        weddingDate,
+        templateId,
+        status,
+        blocksConfig,
+      });
+      return true;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось сохранить изменения");
       return false;
     }
-    return true;
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    try {
-      if (await save()) toast.success("Сохранено");
-    } finally {
-      setSaving(false);
-    }
+    if (await save()) toast.success("Сохранено");
   };
 
   const handleTogglePublish = async () => {
-    setPublishing(true);
-    try {
-      // Publish always saves the current draft first — otherwise "publish"
-      // could silently go live with stale content from the last save.
-      if (!(await save())) return;
+    // Publish always saves the current draft first — otherwise "publish"
+    // could silently go live with stale content from the last save.
+    if (!(await save())) return;
 
-      const res = await fetch(`/api/admin/projects/${project.id}/publish`, { method: "POST" });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) {
-        toast.error("Не удалось изменить публикацию");
-        return;
-      }
+    try {
+      const data = await publishMutation.mutateAsync();
       setPublishedAt(data.publishedAt);
       toast.success(data.publishedAt ? "Сайт опубликован" : "Публикация снята");
-    } finally {
-      setPublishing(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось изменить публикацию");
     }
   };
 
@@ -236,18 +232,22 @@ export function ProjectEditor({
             <button
               type="button"
               onClick={handleSave}
-              disabled={saving || publishing}
+              disabled={saveMutation.isPending || publishMutation.isPending}
               className="cursor-pointer rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 disabled:opacity-50"
             >
-              {saving ? "Сохраняем…" : "Сохранить"}
+              {saveMutation.isPending ? "Сохраняем…" : "Сохранить"}
             </button>
             <button
               type="button"
               onClick={handleTogglePublish}
-              disabled={saving || publishing}
+              disabled={saveMutation.isPending || publishMutation.isPending}
               className="cursor-pointer rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
             >
-              {publishing ? "…" : publishedAt ? "Снять с публикации" : "Опубликовать"}
+              {publishMutation.isPending
+                ? "…"
+                : publishedAt
+                  ? "Снять с публикации"
+                  : "Опубликовать"}
             </button>
           </div>
         </div>

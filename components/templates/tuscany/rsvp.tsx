@@ -6,6 +6,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Section, Eyebrow, DisplayHeading } from "@/components/primitives";
 import type { BlockProps } from "@/lib/templates/types";
+import { useRsvpMutation } from "@/lib/hooks/use-rsvp-mutation";
 
 const rsvpFormSchema = z.object({
   name: z.string().min(1, "Введите имя"),
@@ -47,6 +48,8 @@ export function TuscanyRsvp({ project, content, previewMode }: BlockProps<"rsvp"
 
   const attending = watch("attending");
 
+  const rsvpMutation = useRsvpMutation();
+
   const onSubmit = async (data: RsvpFormValues) => {
     // project.id is only set on a real published site (see
     // lib/templates/types.ts) — previewMode being true everywhere else
@@ -54,10 +57,8 @@ export function TuscanyRsvp({ project, content, previewMode }: BlockProps<"rsvp"
     // that guard broke, not a case worth a user-facing error message.
     if (!project.id) return;
 
-    const res = await fetch("/api/rsvp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await rsvpMutation.mutateAsync({
         projectId: project.id,
         name: data.name,
         attending: data.attending === "yes",
@@ -66,11 +67,9 @@ export function TuscanyRsvp({ project, content, previewMode }: BlockProps<"rsvp"
         drinkPref: data.drink || undefined,
         plusOneName: data.plusOne || undefined,
         comment: data.comment || undefined,
-      }),
-    });
-
-    if (!res.ok) {
-      toast.error("Не удалось отправить ответ. Попробуйте ещё раз.");
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось отправить ответ");
       return;
     }
 
