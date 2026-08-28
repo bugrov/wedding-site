@@ -34,7 +34,7 @@ const deadlineFormatter = new Intl.DateTimeFormat("ru-RU", {
   month: "long",
 });
 
-export function TuscanyRsvp({ content, previewMode }: BlockProps<"rsvp">) {
+export function TuscanyRsvp({ project, content, previewMode }: BlockProps<"rsvp">) {
   const {
     register,
     handleSubmit,
@@ -48,9 +48,32 @@ export function TuscanyRsvp({ content, previewMode }: BlockProps<"rsvp">) {
   const attending = watch("attending");
 
   const onSubmit = async (data: RsvpFormValues) => {
-    // TODO(step 7): wire to POST /api/rsvp once that endpoint exists —
-    // this block is validated/functional UI, not yet connected to storage.
-    console.log("RSVP submit (stub, not yet wired to /api/rsvp)", data);
+    // project.id is only set on a real published site (see
+    // lib/templates/types.ts) — previewMode being true everywhere else
+    // already disables this button, so reaching here without it would mean
+    // that guard broke, not a case worth a user-facing error message.
+    if (!project.id) return;
+
+    const res = await fetch("/api/rsvp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectId: project.id,
+        name: data.name,
+        attending: data.attending === "yes",
+        headcount: data.headcount || undefined,
+        foodPref: data.food || undefined,
+        drinkPref: data.drink || undefined,
+        plusOneName: data.plusOne || undefined,
+        comment: data.comment || undefined,
+      }),
+    });
+
+    if (!res.ok) {
+      toast.error("Не удалось отправить ответ. Попробуйте ещё раз.");
+      return;
+    }
+
     toast.success("Спасибо! Ваш ответ получен.");
   };
 

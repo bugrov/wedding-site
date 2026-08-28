@@ -80,12 +80,19 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
       <PageRenderer
         templateId={project.templateId}
         project={{
+          id: project.id,
           groomName: project.groomName,
           brideName: project.brideName,
           weddingDate: project.weddingDate,
         }}
         blocksConfig={blocksConfig}
         colorTokens={colorTokens}
+        // Same gate as the watermark: an unpaid "preview" site shouldn't
+        // actually accept RSVPs, only look presentable enough to evaluate
+        // (see feedback — this was the whole point of asking before wiring
+        // up a real endpoint). Reuses the exact mechanism that already
+        // disables RSVP submission in the lead/admin demo previews.
+        previewMode={!isPaid}
       />
     </>
   );

@@ -6,6 +6,12 @@ import type { ColorTokens } from "@/lib/theme/tokens";
 // the full Prisma Project type — templates shouldn't know about DB/lead vs
 // project at all, just this shape.
 export type ProjectSummary = {
+  /** The real Project row's id — only set for an actual published guest
+   * site (app/sites/[slug]/page.tsx), never the lead/admin-preview demo
+   * data. The RSVP block needs it to know which project to record a
+   * response against; previewMode being true wherever id is absent means
+   * it's never actually submitted regardless. */
+  id?: string;
   groomName: string;
   brideName: string;
   weddingDate: Date;
