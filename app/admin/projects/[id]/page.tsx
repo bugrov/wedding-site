@@ -31,6 +31,12 @@ export default async function AdminProjectPage({ params }: { params: Promise<{ i
   const siteUrl = baseDomain
     ? `${protocol}://${project.slug}.${baseDomain}`
     : `/sites/${project.slug}`;
+  // /client/[token] lives on the base app domain, not a per-couple
+  // subdomain (see plan's code structure) — proxy.ts only rewrites
+  // <slug>.<domain>, so the bare base domain reaches this route untouched.
+  const clientUrl = baseDomain
+    ? `${protocol}://${baseDomain}/client/${project.clientAccessToken}`
+    : `/client/${project.clientAccessToken}`;
 
   return (
     <main className="min-h-screen bg-neutral-50">
@@ -48,6 +54,7 @@ export default async function AdminProjectPage({ params }: { params: Promise<{ i
         }}
         initialBlocksConfig={blocksConfig}
         siteUrl={siteUrl}
+        clientUrl={clientUrl}
       />
     </main>
   );

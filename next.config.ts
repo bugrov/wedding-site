@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   // Self-hosted on our own VPS via Docker (not Vercel) — standalone output
   // bundles a minimal Node server so the image doesn't need the full node_modules tree.
   output: "standalone",
+  // `next dev` only trusts requests from the hostname it was started under
+  // (localhost) by default and silently blocks dev-asset/HMR requests from
+  // anything else — the page's initial HTML still renders, but client
+  // components never hydrate (no error, just dead buttons/forms). Local
+  // wildcard-subdomain testing goes through lvh.me (resolves to 127.0.0.1;
+  // see proxy.ts + APP_BASE_DOMAIN), on both the bare domain and every
+  // <slug>.lvh.me, so both need to be allowed here.
+  allowedDevOrigins: ["lvh.me", "*.lvh.me"],
   images: {
     // images.unsplash.com/images.pexels.com cover the template-level
     // decorative stock photos. The wildcard covers real client content

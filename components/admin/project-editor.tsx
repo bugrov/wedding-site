@@ -37,6 +37,7 @@ type ProjectEditorProps = {
   };
   initialBlocksConfig: BlocksConfig;
   siteUrl: string;
+  clientUrl: string;
 };
 
 type MainFieldErrors = { groomName?: string; brideName?: string; weddingDate?: string };
@@ -47,7 +48,12 @@ type MainFieldErrors = { groomName?: string; brideName?: string; weddingDate?: s
 // instead of a draft lead. Reusing it keeps content editing identical between
 // "lead fills in a rough draft" and "operator finishes the real site" instead
 // of maintaining two separate editors for the same schema.
-export function ProjectEditor({ project, initialBlocksConfig, siteUrl }: ProjectEditorProps) {
+export function ProjectEditor({
+  project,
+  initialBlocksConfig,
+  siteUrl,
+  clientUrl,
+}: ProjectEditorProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [groomName, setGroomName] = useState(project.groomName);
   const [brideName, setBrideName] = useState(project.brideName);
@@ -198,6 +204,18 @@ export function ProjectEditor({ project, initialBlocksConfig, siteUrl }: Project
                     className="underline underline-offset-4"
                   >
                     Открыть сайт
+                  </a>
+                  {" · "}
+                  {/* Sent to the couple once, per plan — the operator copies
+                      it from here each time (no "forgot password" flow: the
+                      link itself is the credential). */}
+                  <a
+                    href={clientUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline underline-offset-4"
+                  >
+                    Кабинет клиента
                   </a>
                 </>
               )}
