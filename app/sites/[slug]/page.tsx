@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { blocksConfigSchema } from "@/lib/blocks";
 import { colorTokensSchema, type ColorTokens } from "@/lib/theme/tokens";
 import { PageRenderer } from "@/components/page-renderer";
+import { SitePaymentWatermark } from "@/components/site-payment-watermark";
+import { ProjectStatus } from "@/app/generated/prisma/client";
 
 // cache(): generateMetadata and the page component both need this project —
 // Next only dedupes plain fetch() calls automatically, not arbitrary Prisma
@@ -66,16 +68,25 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
     }
   }
 
+  // publishedAt already gates whether guests can reach this page at all —
+  // this gates whether what they see is the finished product or a watermarked
+  // "pay to unlock" preview of it (see components/site-payment-watermark.tsx).
+  const isPaid =
+    project.status === ProjectStatus.PAID || project.status === ProjectStatus.PUBLISHED;
+
   return (
-    <PageRenderer
-      templateId={project.templateId}
-      project={{
-        groomName: project.groomName,
-        brideName: project.brideName,
-        weddingDate: project.weddingDate,
-      }}
-      blocksConfig={blocksConfig}
-      colorTokens={colorTokens}
-    />
+    <>
+      {!isPaid && <SitePaymentWatermark />}
+      <PageRenderer
+        templateId={project.templateId}
+        project={{
+          groomName: project.groomName,
+          brideName: project.brideName,
+          weddingDate: project.weddingDate,
+        }}
+        blocksConfig={blocksConfig}
+        colorTokens={colorTokens}
+      />
+    </>
   );
 }

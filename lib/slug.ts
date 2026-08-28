@@ -59,6 +59,10 @@ async function slugTaken(slug: string): Promise<boolean> {
   return (await prisma.project.findUnique({ where: { slug }, select: { id: true } })) !== null;
 }
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
 export async function generateUniqueSlug(
   groomName: string,
   brideName: string,
@@ -67,17 +71,21 @@ export async function generateUniqueSlug(
   const base = `${slugifyName(groomName)}-${slugifyName(brideName)}`;
   if (!(await slugTaken(base))) return base;
 
-  // Same couple names, different couple — the wedding year disambiguates
-  // them more meaningfully than a bare "-2" (see feedback: plain numbers
-  // "look off"). Only two identically-named couples marrying in the same
-  // year fall through to a numeric suffix, which should be rare.
+  // Same couple names, different couple — disambiguate with something
+  // meaningful instead of a bare "-2" (see feedback: plain numbers "look
+  // off"). Widens from year to the full wedding date only if two
+  // identically-named couples also marry in the same year — a numeric
+  // suffix is the last resort, for the (very rare) exact same date too.
   const withYear = `${base}-${weddingDate.getFullYear()}`;
   if (!(await slugTaken(withYear))) return withYear;
 
-  let slug = withYear;
+  const withDate = `${base}-${pad2(weddingDate.getDate())}-${pad2(weddingDate.getMonth() + 1)}-${weddingDate.getFullYear()}`;
+  if (!(await slugTaken(withDate))) return withDate;
+
+  let slug = withDate;
   let suffix = 2;
   while (await slugTaken(slug)) {
-    slug = `${withYear}-${suffix}`;
+    slug = `${withDate}-${suffix}`;
     suffix++;
   }
 
