@@ -572,7 +572,7 @@ export function RsvpForm({
   const options: ["askFood" | "askDrink" | "askPlusOne" | "askComment", string][] = [
     ["askFood", "Спрашивать пожелания по питанию"],
     ["askDrink", "Спрашивать пожелания по напиткам"],
-    ["askPlusOne", "Спрашивать про +1"],
+    ["askPlusOne", "Спрашивать про пару"],
     ["askComment", "Спрашивать комментарий"],
   ];
 

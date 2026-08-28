@@ -131,7 +131,7 @@ export function TuscanyRsvp({ project, content, previewMode }: BlockProps<"rsvp"
             {content.askPlusOne && (
               <div>
                 <label className="block text-sm font-medium" htmlFor="rsvp-plusone">
-                  Имя пары (+1), если будет
+                  Имя пары, если будет
                 </label>
                 <input id="rsvp-plusone" {...register("plusOne")} className={inputClassName} />
               </div>

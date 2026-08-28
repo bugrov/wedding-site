@@ -82,7 +82,7 @@ export function RsvpTable({ token, responses }: { token: string; responses: Rsvp
             <th className="px-4 py-3 font-medium">Кол-во</th>
             <th className="px-4 py-3 font-medium">Питание</th>
             <th className="px-4 py-3 font-medium">Напитки</th>
-            <th className="px-4 py-3 font-medium">+1</th>
+            <th className="px-4 py-3 font-medium">Пара</th>
             <th className="px-4 py-3 font-medium">Комментарий</th>
             <th className="px-4 py-3 font-medium">Когда</th>
             <th className="px-4 py-3 font-medium"></th>

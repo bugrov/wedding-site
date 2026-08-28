@@ -56,6 +56,18 @@ export default async function ClientDashboardPage({
           </p>
         </div>
 
+        {/* The one number this whole page exists to answer clearly (see
+            feedback: "не пойму, какой мне итог считать чтоб отдать в
+            ресторан") — same totalGuests as the breakdown card below, just
+            given its own unambiguous, headline presentation instead of
+            being one of three same-sized cards the client has to parse. */}
+        <div className="rounded-lg border-2 border-neutral-900 bg-white p-6 text-center">
+          <p className="text-4xl font-semibold text-neutral-900">{totalGuests}</p>
+          <p className="mt-1 text-sm text-neutral-600">
+            Итого человек — эту цифру можно передавать на площадку/в ресторан
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-lg border border-neutral-200 bg-white p-4">
             <p className="text-2xl font-semibold text-neutral-900">
@@ -65,7 +77,7 @@ export default async function ClientDashboardPage({
           </div>
           <div className="rounded-lg border border-neutral-200 bg-white p-4">
             <p className="text-2xl font-semibold text-neutral-900">{totalGuests}</p>
-            <p className="text-sm text-neutral-500">гостей придёт (с учётом +1)</p>
+            <p className="text-sm text-neutral-500">гостей придёт (с учётом пары)</p>
           </div>
           <div className="rounded-lg border border-neutral-200 bg-white p-4">
             <p className="text-2xl font-semibold text-neutral-900">{notAttending.length}</p>
