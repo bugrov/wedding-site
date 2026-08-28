@@ -253,27 +253,34 @@ export function ProjectEditor({
         </div>
       </div>
 
-      <BlockSettingsDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        enabledBlocks={enabledBlocks}
-        onToggleBlock={toggleBlock}
-        templateId={templateId}
-        onTemplateChange={setTemplateId}
-        coverContent={coverContent}
-        onCoverChange={setCoverContent}
-        content={content}
-        onContentChange={updateContent}
-        features={features}
-        onFeaturesChange={setFeatures}
-        groomName={groomName}
-        onGroomNameChange={setGroomName}
-        brideName={brideName}
-        onBrideNameChange={setBrideName}
-        weddingDate={weddingDate}
-        onWeddingDateChange={setWeddingDate}
-        mainFieldErrors={mainFieldErrors}
-      />
+      {/* pt-6: unlike the public configurator, where a heading+paragraph
+          sit above the drawer's trigger button, here it comes right after
+          the header bar with nothing between them — without this the button
+          rendered flush against the header's bottom border (see feedback:
+          "прилипла к верхнему блоку"). */}
+      <div className="pt-6">
+        <BlockSettingsDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          enabledBlocks={enabledBlocks}
+          onToggleBlock={toggleBlock}
+          templateId={templateId}
+          onTemplateChange={setTemplateId}
+          coverContent={coverContent}
+          onCoverChange={setCoverContent}
+          content={content}
+          onContentChange={updateContent}
+          features={features}
+          onFeaturesChange={setFeatures}
+          groomName={groomName}
+          onGroomNameChange={setGroomName}
+          brideName={brideName}
+          onBrideNameChange={setBrideName}
+          weddingDate={weddingDate}
+          onWeddingDateChange={setWeddingDate}
+          mainFieldErrors={mainFieldErrors}
+        />
+      </div>
 
       <div className="border-y border-black/10">
         <PageRenderer
