@@ -12,28 +12,30 @@ export function TuscanyGallery({ content }: BlockProps<"gallery">) {
   const photos = content.photos.filter(isRenderableUrl);
 
   return (
-    <Section bleed="contained">
-      <div className="text-center">
-        <Eyebrow>Галерея</Eyebrow>
-        <DisplayHeading as="h2" className="mt-3 text-3xl md:text-4xl">
-          Несколько моментов
-        </DisplayHeading>
-      </div>
-      {photos.length > 0 && (
-        <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {photos.map((src, i) => (
-            <div key={i} className="relative aspect-square overflow-hidden rounded-sm">
-              <Image
-                src={src}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 50vw, 25vw"
-              />
-            </div>
-          ))}
+    <Section bleed="full" className="bg-(--color-primary) text-(--color-background)">
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="text-center">
+          <Eyebrow className="text-(--color-background)/70">Галерея</Eyebrow>
+          <DisplayHeading as="h2" className="mt-3 text-3xl text-(--color-background) md:text-4xl">
+            Несколько моментов
+          </DisplayHeading>
         </div>
-      )}
+        {photos.length > 0 && (
+          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+            {photos.map((src, i) => (
+              <div key={i} className="relative aspect-square overflow-hidden rounded-sm">
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </Section>
   );
 }
