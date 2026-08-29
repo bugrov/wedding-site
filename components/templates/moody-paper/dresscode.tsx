@@ -1,0 +1,29 @@
+import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primitives";
+import type { BlockProps } from "@/lib/templates/types";
+import { TornCard } from "./decor";
+
+export function MoodyPaperDressCode({ content }: BlockProps<"dresscode">) {
+  return (
+    <Section bleed="full">
+      <TornCard className="text-center">
+        <Eyebrow>Дресс-код</Eyebrow>
+        <DisplayHeading as="h2" className="mt-3 text-3xl md:text-4xl">
+          Стиль вечера
+        </DisplayHeading>
+        <BodyText className="mx-auto mt-6 max-w-lg text-(--color-text)">{content.text}</BodyText>
+        {content.palette && content.palette.length > 0 && (
+          <div className="mt-6 flex justify-center gap-3">
+            {content.palette.map((color, i) => (
+              <span
+                key={i}
+                className="h-8 w-8 rounded-full border border-black/10"
+                style={{ backgroundColor: color }}
+                aria-label={color}
+              />
+            ))}
+          </div>
+        )}
+      </TornCard>
+    </Section>
+  );
+}

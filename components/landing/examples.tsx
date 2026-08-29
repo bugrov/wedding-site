@@ -15,7 +15,7 @@ const STYLES = [
   { name: "Old Money", palette: ["#6B1E2B", "#A9813E", "#F6EFE2"], available: true },
   { name: "Editorial Ч-Б", palette: ["#1A1A1A", "#B5533C", "#E5E0DA"], available: true },
   { name: "Pink Sketch", palette: ["#8B3226", "#C1503D", "#F2D9D3"], available: true },
-  { name: "Направление 5", palette: ["#14201A", "#EDE6D8"], available: false },
+  { name: "Moody Paper", palette: ["#1E2118", "#6B6650", "#F1F0EC"], available: true },
 ];
 
 export function Examples() {
@@ -27,8 +27,8 @@ export function Examples() {
           Направления дизайна
         </DisplayHeading>
         <BodyText className="mx-auto mt-4 max-w-lg">
-          «Тоскана», «Old Money», «Editorial Ч-Б» и «Pink Sketch» уже доступны — соберите свой сайт
-          в конструкторе ниже. Остальные направления появятся здесь по мере готовности.
+          «Тоскана», «Old Money», «Editorial Ч-Б», «Pink Sketch» и «Moody Paper» уже доступны —
+          соберите свой сайт в конструкторе ниже.
         </BodyText>
       </div>
       <div className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
