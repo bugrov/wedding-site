@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { blocksConfigSchema, createDefaultBlocksConfig } from "@/lib/blocks";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { ProjectEditor } from "@/components/admin/project-editor";
+import { getSiteUrl, getClientUrl } from "@/lib/site-url";
 
 export default async function AdminProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const adminUser = await getAdminSession();
@@ -21,22 +22,11 @@ export default async function AdminProjectPage({ params }: { params: Promise<{ i
     ? blocksConfigResult.data
     : createDefaultBlocksConfig();
 
-  // http in dev (APP_BASE_DOMAIN is a plain lvh.me:port there, no TLS) — only
-  // prod, behind nginx per the plan, actually terminates https. Computed
-  // unconditionally (not gated on publishedAt) — the editor toggles publish
-  // client-side without a page reload, so it needs this URL ready to show
-  // the moment that happens, not just at the page's initial load.
-  const baseDomain = process.env.APP_BASE_DOMAIN;
-  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-  const siteUrl = baseDomain
-    ? `${protocol}://${project.slug}.${baseDomain}`
-    : `/sites/${project.slug}`;
-  // /client/[token] lives on the base app domain, not a per-couple
-  // subdomain (see plan's code structure) — proxy.ts only rewrites
-  // <slug>.<domain>, so the bare base domain reaches this route untouched.
-  const clientUrl = baseDomain
-    ? `${protocol}://${baseDomain}/client/${project.clientAccessToken}`
-    : `/client/${project.clientAccessToken}`;
+  // Computed unconditionally (not gated on publishedAt) — the editor toggles
+  // publish client-side without a page reload, so it needs this URL ready to
+  // show the moment that happens, not just at the page's initial load.
+  const siteUrl = getSiteUrl(project.slug);
+  const clientUrl = getClientUrl(project.clientAccessToken);
 
   return (
     <main className="min-h-screen bg-neutral-50">

@@ -10,7 +10,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "admin:set-password": "tsx scripts/set-admin-password.ts"
+    "admin:set-password": "tsx scripts/set-admin-password.ts",
+    "seed:demos": "tsx prisma/seed-demos.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

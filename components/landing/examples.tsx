@@ -1,21 +1,44 @@
+import Image from "next/image";
 import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primitives";
+import { getSiteUrl } from "@/lib/site-url";
 
-// Illustrative palette swatches only — not the committed design tokens for
-// these 4 not-yet-built directions (that happens when each is actually
-// designed at step 10). Real demo sites with real photos/content are step 11
-// (after all 5 templates exist) — deliberately not faking a "live example"
-// link before that's true; this section instead shows the range of styles
-// coming and which one is real today.
+// Step 11: each swatch now links to a real, published demo Project (see
+// prisma/seed-demos.ts) instead of "#configurator" — a live example per
+// template, not a faked preview. The thumbnail is our own screenshot of that
+// demo site (public/images/demo-previews/, see CREDITS.md), not the shared
+// stock photo — the photo itself is identical across all 5 demos, so it
+// wouldn't tell templates apart, but the actual rendered page does.
 const STYLES = [
   {
     name: "Тоскана",
     palette: ["#4B5320", "#9C6B30", "#F6F2EA"],
-    available: true,
+    demoSlug: "demo-tuscany",
+    preview: "/images/demo-previews/tuscany.jpg",
   },
-  { name: "Old Money", palette: ["#6B1E2B", "#A9813E", "#F6EFE2"], available: true },
-  { name: "Editorial Ч-Б", palette: ["#1A1A1A", "#B5533C", "#E5E0DA"], available: true },
-  { name: "Pink Sketch", palette: ["#8B3226", "#C1503D", "#F2D9D3"], available: true },
-  { name: "Moody Paper", palette: ["#1E2118", "#6B6650", "#F1F0EC"], available: true },
+  {
+    name: "Old Money",
+    palette: ["#6B1E2B", "#A9813E", "#F6EFE2"],
+    demoSlug: "demo-old-money",
+    preview: "/images/demo-previews/old-money.jpg",
+  },
+  {
+    name: "Editorial Ч-Б",
+    palette: ["#1A1A1A", "#B5533C", "#E5E0DA"],
+    demoSlug: "demo-editorial-bw",
+    preview: "/images/demo-previews/editorial-bw.jpg",
+  },
+  {
+    name: "Pink Sketch",
+    palette: ["#8B3226", "#C1503D", "#F2D9D3"],
+    demoSlug: "demo-pink-sketch",
+    preview: "/images/demo-previews/pink-sketch.jpg",
+  },
+  {
+    name: "Moody Paper",
+    palette: ["#1E2118", "#6B6650", "#F1F0EC"],
+    demoSlug: "demo-moody-paper",
+    preview: "/images/demo-previews/moody-paper.jpg",
+  },
 ];
 
 export function Examples() {
@@ -28,32 +51,40 @@ export function Examples() {
         </DisplayHeading>
         <BodyText className="mx-auto mt-4 max-w-lg">
           «Тоскана», «Old Money», «Editorial Ч-Б», «Pink Sketch» и «Moody Paper» уже доступны —
-          соберите свой сайт в конструкторе ниже.
+          посмотрите живой пример каждого направления и соберите свой сайт в конструкторе ниже.
         </BodyText>
       </div>
       <div className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {STYLES.map((style) => (
           <a
             key={style.name}
-            href={style.available ? "#configurator" : undefined}
-            aria-disabled={!style.available}
-            className={`flex flex-col items-center gap-3 rounded-lg border border-black/10 px-4 py-8 text-center transition ${
-              style.available ? "hover:border-(--color-primary)" : "cursor-default opacity-50"
-            }`}
+            href={getSiteUrl(style.demoSlug)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center gap-3 overflow-hidden rounded-lg border border-black/10 text-center transition hover:border-(--color-primary)"
           >
-            <div className="flex gap-1.5">
-              {style.palette.map((color) => (
-                <span
-                  key={color}
-                  className="h-6 w-6 rounded-full border border-black/10"
-                  style={{ backgroundColor: color }}
-                />
-              ))}
+            <div className="relative aspect-square w-full">
+              <Image
+                src={style.preview}
+                alt={`Превью сайта в стиле «${style.name}»`}
+                fill
+                className="object-cover"
+                sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+              />
             </div>
-            <span className="text-sm font-medium">{style.name}</span>
-            <span className="text-xs text-(--color-text)/50">
-              {style.available ? "Доступно" : "Скоро"}
-            </span>
+            <div className="flex flex-col items-center gap-1.5 px-4 pb-4">
+              <div className="flex gap-1">
+                {style.palette.map((color) => (
+                  <span
+                    key={color}
+                    className="h-3 w-3 rounded-full border border-black/10"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+              <span className="text-sm font-medium">{style.name}</span>
+              <span className="text-xs text-(--color-text)/50">Живой пример</span>
+            </div>
           </a>
         ))}
       </div>
