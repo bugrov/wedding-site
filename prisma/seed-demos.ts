@@ -80,6 +80,10 @@ function demoBlocksConfig(): BlocksConfig {
     deadline: "2027-05-15",
   };
 
+  // On for the demo sites specifically, so the feature is actually visible
+  // on a "living" example — off by default otherwise (DEFAULT_BLOCK_FEATURES).
+  blocksConfig.features = { ...blocksConfig.features, music: true };
+
   return blocksConfig;
 }
 
