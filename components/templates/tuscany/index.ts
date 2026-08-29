@@ -28,4 +28,8 @@ export const tuscanyTemplate: TemplateDefinition = {
     chat: TuscanyChat,
     rsvp: TuscanyRsvp,
   },
+  // See plan feedback: "то блок зелёный, то бежевый" — Timer/Schedule/RSVP
+  // keep their own fixed hero treatments, these six alternate cream/olive
+  // by position among whichever of them are actually enabled.
+  alternatingBlocks: ["story", "venue", "dresscode", "gallery", "wishes", "chat"],
 };

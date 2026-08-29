@@ -28,4 +28,8 @@ export const oldMoneyTemplate: TemplateDefinition = {
     chat: OldMoneyChat,
     rsvp: OldMoneyRsvp,
   },
+  // See feedback: "делаем чередование бордовых блоков" — Timer/Schedule/RSVP
+  // keep their own fixed hero treatments, these six alternate cream/dark
+  // burgundy by position among whichever of them are actually enabled.
+  alternatingBlocks: ["story", "venue", "dresscode", "gallery", "wishes", "chat"],
 };

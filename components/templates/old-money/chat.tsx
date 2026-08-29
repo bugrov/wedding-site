@@ -1,17 +1,32 @@
 import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primitives";
 import type { BlockProps } from "@/lib/templates/types";
+import { cn } from "@/lib/utils";
 
-// See venue.tsx — same full-bleed dark alternation as Tuscany's Chat, CTA
-// button inverted (cream fill) for contrast against the now-dark section.
-export function OldMoneyChat({ content }: BlockProps<"chat">) {
+// See story.tsx for how alternateDark works. CTA button inverts (cream
+// fill) when this block lands on the dark treatment, for contrast.
+export function OldMoneyChat({ content, alternateDark }: BlockProps<"chat">) {
   return (
-    <Section bleed="full" className="bg-(--color-primary) text-(--color-background)">
-      <div className="mx-auto max-w-5xl px-6 text-center">
-        <Eyebrow className="text-(--color-background)/70">Чат для гостей</Eyebrow>
-        <DisplayHeading as="h2" className="mt-3 text-3xl text-(--color-background) md:text-4xl">
+    <Section
+      bleed={alternateDark ? "full" : "contained"}
+      className={cn(
+        "text-center",
+        alternateDark && "bg-(--color-primary) text-(--color-background)",
+      )}
+    >
+      <div className={cn(alternateDark && "mx-auto max-w-5xl px-6")}>
+        <Eyebrow className={cn(alternateDark && "text-(--color-background)/70")}>
+          Чат для гостей
+        </Eyebrow>
+        <DisplayHeading
+          as="h2"
+          className={cn("mt-3 text-3xl md:text-4xl", alternateDark && "text-(--color-background)")}
+        >
           Общий чат
         </DisplayHeading>
-        <BodyText className="mx-auto mt-4 max-w-lg text-(--color-background)/85" font="display">
+        <BodyText
+          className={cn("mx-auto mt-4 max-w-lg", alternateDark && "text-(--color-background)/85")}
+          font="display"
+        >
           {content.text}
         </BodyText>
         {content.link && (
@@ -19,7 +34,12 @@ export function OldMoneyChat({ content }: BlockProps<"chat">) {
             href={content.link}
             target="_blank"
             rel="noreferrer"
-            className="mt-6 inline-block border border-(--color-background) bg-(--color-background) px-6 py-3 text-sm font-medium text-(--color-primary) transition hover:opacity-90"
+            className={cn(
+              "mt-6 inline-block border px-6 py-3 text-sm font-medium transition",
+              alternateDark
+                ? "border-(--color-background) bg-(--color-background) text-(--color-primary) hover:opacity-90"
+                : "border-(--color-primary) text-(--color-primary) hover:bg-(--color-primary) hover:text-(--color-background)",
+            )}
           >
             Перейти в чат
           </a>

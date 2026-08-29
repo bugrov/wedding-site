@@ -1,20 +1,34 @@
 import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primitives";
 import type { BlockProps } from "@/lib/templates/types";
+import { cn } from "@/lib/utils";
 
-// Full-bleed dark burgundy, alternating with the plain cream blocks around
-// it — same "чередование" treatment as Tuscany's Venue/Gallery/Chat, now
-// that this direction's primary token is dark enough to carry it (see
-// theme.tsx and feedback: "делаем чередование бордовых блоков").
-export function OldMoneyVenue({ content }: BlockProps<"venue">) {
+// One of the alternating-background beats down the page (see feedback:
+// "делаем чередование бордовых блоков") — see story.tsx for how
+// alternateDark works.
+export function OldMoneyVenue({ content, alternateDark }: BlockProps<"venue">) {
   return (
-    <Section bleed="full" className="bg-(--color-primary) text-(--color-background)">
-      <div className="mx-auto max-w-5xl px-6 text-center">
-        <Eyebrow className="text-(--color-background)/70">Место проведения</Eyebrow>
-        <DisplayHeading as="h2" className="mt-3 text-3xl text-(--color-background) md:text-4xl">
+    <Section
+      bleed={alternateDark ? "full" : "contained"}
+      className={cn(
+        "text-center",
+        alternateDark && "bg-(--color-primary) text-(--color-background)",
+      )}
+    >
+      <div className={cn(alternateDark && "mx-auto max-w-5xl px-6")}>
+        <Eyebrow className={cn(alternateDark && "text-(--color-background)/70")}>
+          Место проведения
+        </Eyebrow>
+        <DisplayHeading
+          as="h2"
+          className={cn("mt-3 text-3xl md:text-4xl", alternateDark && "text-(--color-background)")}
+        >
           {content.address || "Адрес будет объявлен"}
         </DisplayHeading>
         {content.description && (
-          <BodyText className="mx-auto mt-4 max-w-lg text-(--color-background)/85" font="display">
+          <BodyText
+            className={cn("mx-auto mt-4 max-w-lg", alternateDark && "text-(--color-background)/85")}
+            font="display"
+          >
             {content.description}
           </BodyText>
         )}
@@ -23,7 +37,10 @@ export function OldMoneyVenue({ content }: BlockProps<"venue">) {
             href={content.mapUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-6 inline-block text-sm text-(--color-background) underline underline-offset-4"
+            className={cn(
+              "mt-6 inline-block text-sm underline underline-offset-4",
+              alternateDark ? "text-(--color-background)" : "text-(--color-accent-text)",
+            )}
           >
             Открыть на карте
           </a>

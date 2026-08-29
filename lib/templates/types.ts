@@ -36,6 +36,15 @@ export type BlockProps<T extends BlockType> = {
    * instead of (or in addition to) the Cover itself, e.g. Old Money's Timer
    * per the reference board. Most block renderers ignore this. */
   coverPhotoUrl?: string;
+  /** For a block type listed in this template's `alternatingBlocks` (see
+   * TemplateDefinition) — which of the two background treatments it should
+   * use, computed from this block's position among just the *enabled*
+   * blocks in that set (page-renderer.tsx), not from its fixed position in
+   * the schema's block-type list. Disabling a block earlier in the page
+   * therefore reflows the parity instead of ever leaving two same-treatment
+   * blocks stranded next to each other. Undefined for block types outside
+   * that set, or for templates that don't alternate at all. */
+  alternateDark?: boolean;
 };
 
 /**
@@ -58,4 +67,12 @@ export type TemplateDefinition = {
    * selection (step 6) will let the operator override this from a saved
    * Theme row instead. */
   defaultColorTokens: ColorTokens;
+  /** Ordered subset of this template's block types that alternate between
+   * two background treatments (see Tuscany/Old Money's cream/dark blocks).
+   * page-renderer.tsx computes each one's `alternateDark` from its position
+   * among just these types within the actually-enabled block order — not
+   * from a hardcoded per-type color — so turning one off never leaves two
+   * same-treatment blocks adjacent. Omit entirely for a template that
+   * doesn't alternate. */
+  alternatingBlocks?: BlockType[];
 };

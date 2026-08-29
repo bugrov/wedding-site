@@ -1,8 +1,10 @@
 import Image from "next/image";
 import { Section, Eyebrow, DisplayHeading, isRenderableUrl } from "@/components/primitives";
 import type { BlockProps } from "@/lib/templates/types";
+import { cn } from "@/lib/utils";
 
-export function TuscanyGallery({ content }: BlockProps<"gallery">) {
+// See story.tsx for how alternateDark works.
+export function TuscanyGallery({ content, alternateDark }: BlockProps<"gallery">) {
   // Fills in as links get added (up to 8, see schema) — no placeholder
   // boxes for photos nobody has added yet (see feedback, same bug as the
   // story block). A plain wrapping grid, not PhotoGrid's fixed-slot
@@ -12,11 +14,20 @@ export function TuscanyGallery({ content }: BlockProps<"gallery">) {
   const photos = content.photos.filter(isRenderableUrl);
 
   return (
-    <Section bleed="full" className="bg-(--color-primary) text-(--color-background)">
-      <div className="mx-auto max-w-5xl px-6">
+    <Section
+      bleed={alternateDark ? "full" : "contained"}
+      className={cn(alternateDark && "bg-(--color-primary) text-(--color-background)")}
+    >
+      <div className={cn(alternateDark && "mx-auto max-w-5xl px-6")}>
         <div className="text-center">
-          <Eyebrow className="text-(--color-background)/70">Галерея</Eyebrow>
-          <DisplayHeading as="h2" className="mt-3 text-3xl text-(--color-background) md:text-4xl">
+          <Eyebrow className={cn(alternateDark && "text-(--color-background)/70")}>Галерея</Eyebrow>
+          <DisplayHeading
+            as="h2"
+            className={cn(
+              "mt-3 text-3xl md:text-4xl",
+              alternateDark && "text-(--color-background)",
+            )}
+          >
             Несколько моментов
           </DisplayHeading>
         </div>

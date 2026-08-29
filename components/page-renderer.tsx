@@ -30,10 +30,24 @@ export function PageRenderer({
     return null;
   }
 
-  const { Cover, ThemeWrapper, blocks } = template;
+  const { Cover, ThemeWrapper, blocks, alternatingBlocks } = template;
   const enabledOrder = blocksConfig.order.filter((type) =>
     blocksConfig.enabledBlocks.includes(type),
   );
+
+  // Parity by position among just the *enabled* alternating blocks, not a
+  // fixed per-type color — so disabling one never leaves two same-treatment
+  // blocks stranded next to each other (see TemplateDefinition.alternatingBlocks).
+  const alternateDarkByType = new Map<string, boolean>();
+  if (alternatingBlocks) {
+    let position = 0;
+    for (const type of enabledOrder) {
+      if (alternatingBlocks.includes(type)) {
+        alternateDarkByType.set(type, position % 2 === 1);
+        position++;
+      }
+    }
+  }
 
   return (
     <ThemeWrapper colorTokens={colorTokens}>
@@ -54,6 +68,7 @@ export function PageRenderer({
             content={content as never}
             previewMode={previewMode}
             coverPhotoUrl={blocksConfig.cover.photoUrl}
+            alternateDark={alternateDarkByType.get(type)}
           />
         );
       })}
