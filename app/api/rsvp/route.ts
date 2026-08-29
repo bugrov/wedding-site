@@ -3,8 +3,27 @@ import { prisma } from "@/lib/db";
 import { rsvpSchema } from "@/lib/schemas/rsvp";
 import { ProjectStatus } from "@/app/generated/prisma/client";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { checkRateLimit, getClientIp } from "@/lib/auth/rate-limit";
 
 export async function POST(request: Request) {
+  // Public, unauthenticated endpoint, and projectId isn't a secret (it's
+  // right there in the published page's markup) — without this, anyone who
+  // views source can flood a real couple's guest list and Telegram chat
+  // with fake responses. Looser than login: a shared venue/family wifi can
+  // legitimately have several guests RSVPing from the same IP.
+  const { allowed, retryAfterSeconds } = checkRateLimit(`rsvp:${getClientIp(request)}`, {
+    maxAttempts: 20,
+  });
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Слишком много попыток. Попробуйте позже." },
+      {
+        status: 429,
+        headers: retryAfterSeconds ? { "Retry-After": String(retryAfterSeconds) } : undefined,
+      },
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = rsvpSchema.safeParse(body);
 

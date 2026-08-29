@@ -3,14 +3,10 @@ import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth/password";
 import { createAdminSession } from "@/lib/auth/session";
 import { loginSchema } from "@/lib/schemas/auth";
-import { checkRateLimit } from "@/lib/auth/rate-limit";
+import { checkRateLimit, getClientIp } from "@/lib/auth/rate-limit";
 
 export async function POST(request: Request) {
-  // Not behind proxy.ts (matcher excludes /api), so x-forwarded-for comes
-  // straight from whatever's in front in prod (nginx, per plan) — falls back
-  // to a shared bucket in local dev where nothing sets it.
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const { allowed, retryAfterSeconds } = checkRateLimit(ip);
+  const { allowed, retryAfterSeconds } = checkRateLimit(`login:${getClientIp(request)}`);
   if (!allowed) {
     return NextResponse.json(
       { error: "Слишком много попыток входа. Попробуйте позже." },

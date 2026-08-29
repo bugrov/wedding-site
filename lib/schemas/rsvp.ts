@@ -4,7 +4,7 @@ import { z } from "zod";
 // server-side re-validation — same reasoning as leadSchema: never trust the
 // client's copy alone.
 export const rsvpSchema = z.object({
-  projectId: z.string().min(1, "Некорректный проект"),
+  projectId: z.string().min(1, "Некорректный проект").max(50, "Некорректный проект"),
   name: z.string().min(1, "Введите имя").max(200, "Слишком длинное имя"),
   attending: z.boolean(),
   headcount: z.coerce.number().int().min(1).max(20).optional(),
