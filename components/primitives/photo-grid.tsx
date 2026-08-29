@@ -80,9 +80,15 @@ export function isRenderableUrl(src: string): boolean {
   // in-progress URL on every keystroke until typing finishes — next/image
   // throws synchronously on those instead of just failing to load, crashing
   // the whole tree. Treat "not a real URL yet" the same as "no photo".
+  //
+  // `new URL()` alone isn't enough: it happily parses a pasted Windows path
+  // like "C:\Temp\foo.md" as an opaque "c:" scheme instead of throwing, so a
+  // stray file path reached next/image and crashed it (next.config.ts only
+  // allows https remotePatterns). Require http(s) explicitly, matching the
+  // stricter check already used by lib/blocks/schema.ts's httpUrlSchema.
   try {
-    new URL(src);
-    return true;
+    const url = new URL(src);
+    return url.protocol === "http:" || url.protocol === "https:";
   } catch {
     return false;
   }
