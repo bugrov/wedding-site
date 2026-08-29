@@ -177,7 +177,6 @@ export const blockFeaturesSchema = z.object({
   // only ever used as an <audio src>, not a clickable/navigable href, so a
   // non-URL value here can't do anything worse than fail to play.
   musicUrl: z.string().max(200, "Слишком длинный текст").optional(),
-  qrCode: z.boolean().default(true),
   personalizedLinks: z.boolean().default(false),
 });
 
@@ -185,7 +184,6 @@ export type BlockFeatures = z.infer<typeof blockFeaturesSchema>;
 
 export const DEFAULT_BLOCK_FEATURES: BlockFeatures = {
   music: false,
-  qrCode: true,
   personalizedLinks: false,
 };
 
@@ -208,7 +206,7 @@ export const blocksConfigSchema = z.object({
       rsvp: rsvpContentSchema.optional(),
     })
     .default({}),
-  features: blockFeaturesSchema.default({ music: false, qrCode: true, personalizedLinks: false }),
+  features: blockFeaturesSchema.default({ music: false, personalizedLinks: false }),
 });
 
 export type BlocksConfig = z.infer<typeof blocksConfigSchema>;

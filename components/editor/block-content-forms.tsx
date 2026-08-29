@@ -675,12 +675,6 @@ export function FeaturesForm({
           />
         </div>
       )}
-      <CheckboxField
-        checked={value.qrCode}
-        onChange={(checked) => onChange({ ...value, qrCode: checked })}
-      >
-        QR-код для печатных приглашений
-      </CheckboxField>
     </div>
   );
 }
