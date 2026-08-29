@@ -1,17 +1,23 @@
 import { cn } from "@/lib/utils";
 
 // This direction's signature motif (see plan/reference board): every photo
-// casts a flat, hard-edged pink shadow down-right, like a sticker peeled
-// slightly off the page. An earlier hand-drawn wobbly-stroke frame
-// (stretched non-uniformly to fit each photo's box via
-// preserveAspectRatio="none") looked authentic on a 4:5 photo but let some
-// photo corners visibly poke past the wobble on other aspect ratios (see
-// feedback: "некоторые фото вылезают за эту рамку") — a plain even border
-// fixed that, but per further feedback the border was swapped for this
-// offset shadow instead. box-shadow paints outside an element's own
-// overflow-hidden clip (only descendants get clipped), so it's safe to
-// combine both on the same box.
-export const PHOTO_FRAME_CLASSNAME = "rounded-sm shadow-[8px_8px_0_var(--color-accent)]";
+// casts a soft pink shadow down-right, like a sticker peeled slightly off
+// the page. An earlier hand-drawn wobbly-stroke frame (stretched
+// non-uniformly to fit each photo's box via preserveAspectRatio="none")
+// looked authentic on a 4:5 photo but let some photo corners visibly poke
+// past the wobble on other aspect ratios (see feedback: "некоторые фото
+// вылезают за эту рамку") — a plain even border fixed that, then per further
+// feedback the border was swapped for an offset shadow, then that hard
+// 0-blur shadow got a blur radius per "давай чуть размоем тень". box-shadow
+// paints outside an element's own overflow-hidden clip (only descendants
+// get clipped), so it's safe to combine both on the same box. The thin
+// border stays alongside the shadow: the RSVP card's background is the same
+// token as the page background, so its top/left edges had no shadow to read
+// against and vanished into the page (see feedback: "у формы не видны её
+// границы сверху и слева") — a border reads on every side regardless of
+// which corner the shadow falls toward.
+export const PHOTO_FRAME_CLASSNAME =
+  "rounded-sm border border-(--color-accent) shadow-[6px_6px_10px_var(--color-accent)]";
 
 // A wavy hand-drawn rule, standing in for the plain straight DividerLine
 // primitive in blocks that want this template's own sketchy register.
