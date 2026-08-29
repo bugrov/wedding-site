@@ -9,6 +9,11 @@ export const OLD_MONEY_DECOR = {
   /** Schedule section background — light aged-paper texture, no dark vignette
    * (picked specifically so body text stays readable over it at low opacity). */
   scheduleBackground: "https://images.pexels.com/photos/16557322/pexels-photo-16557322.jpeg",
+  /** Cover background behind the doily — a wedding dress pooled on a warm
+   * wood floor, per the reference board (candidate picked pending approval,
+   * see chat: 4 candidates were sourced from Pexels in matching brown/gold
+   * tones). */
+  coverBackground: "https://images.pexels.com/photos/35564324/pexels-photo-35564324.jpeg",
   /** Cover vignette — a round paper doily photo (user-supplied asset:
    * paper1.png), a crumpled cream paper card with a real lace-fan border,
    * replacing an earlier procedurally-generated punched-paper version that

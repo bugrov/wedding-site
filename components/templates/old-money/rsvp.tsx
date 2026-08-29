@@ -29,6 +29,7 @@ export function OldMoneyRsvp({ project, content, previewMode }: BlockProps<"rsvp
         alt=""
         fill
         className="object-cover"
+        style={{ filter: "grayscale(0.6)" }}
         sizes="100vw"
       />
       <div className="absolute inset-0 bg-black/10" aria-hidden />

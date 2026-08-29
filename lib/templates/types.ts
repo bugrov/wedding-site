@@ -30,6 +30,12 @@ export type BlockProps<T extends BlockType> = {
    * (RSVP submit) should disable it here instead of letting a lead visitor
    * think they actually submitted something. */
   previewMode?: boolean;
+  /** The cover photo the operator set in "Обложка" (blocksConfig.cover.photoUrl)
+   * — still owned and edited there, not a separate per-block field. Threaded
+   * through so a template can reuse it as the hero image of a later block
+   * instead of (or in addition to) the Cover itself, e.g. Old Money's Timer
+   * per the reference board. Most block renderers ignore this. */
+  coverPhotoUrl?: string;
 };
 
 /**

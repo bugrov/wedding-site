@@ -53,6 +53,7 @@ export function PageRenderer({
             project={project}
             content={content as never}
             previewMode={previewMode}
+            coverPhotoUrl={blocksConfig.cover.photoUrl}
           />
         );
       })}
