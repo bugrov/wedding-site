@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth/session";
 import { projectUpdateSchema } from "@/lib/schemas/project";
+import { Prisma } from "@/app/generated/prisma/client";
 
 // Saves the operator's edits (names, date, template, status, block content) —
 // never touches publishedAt, so a project stays live to guests while the
@@ -31,6 +32,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     await prisma.project.update({
       where: { id },
       data: {
+        slug: data.slug,
         groomName: data.groomName,
         brideName: data.brideName,
         weddingDate: data.weddingDate,
@@ -39,7 +41,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         blocksConfig: data.blocksConfig,
       },
     });
-  } catch {
+  } catch (error) {
+    // The DB's unique constraint on slug is the actual source of truth for
+    // "is this taken" (a pre-check query here would race against another
+    // save) — P2002 is Prisma's code for exactly that violation.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json(
+        { error: "Такой адрес сайта уже занят другим проектом" },
+        { status: 409 },
+      );
+    }
     return NextResponse.json({ error: "Проект не найден" }, { status: 404 });
   }
 

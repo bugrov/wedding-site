@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   DEFAULT_BLOCK_ORDER,
@@ -15,6 +16,7 @@ import {
 import { PageRenderer } from "@/components/page-renderer";
 import { BlockSettingsDrawer } from "@/components/landing/block-settings-drawer";
 import type { ProjectStatus } from "@/app/generated/prisma/client";
+import { slugSchema } from "@/lib/schemas/slug";
 import {
   useSaveProjectMutation,
   usePublishProjectMutation,
@@ -58,7 +60,10 @@ export function ProjectEditor({
   siteUrl,
   clientUrl,
 }: ProjectEditorProps) {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [slug, setSlug] = useState(project.slug);
+  const [slugError, setSlugError] = useState<string | null>(null);
   const [groomName, setGroomName] = useState(project.groomName);
   const [brideName, setBrideName] = useState(project.brideName);
   const [weddingDate, setWeddingDate] = useState(project.weddingDate);
@@ -123,16 +128,28 @@ export function ProjectEditor({
 
   const save = async (): Promise<boolean> => {
     const nextMainErrors = validateMainFields();
-    if (Object.keys(nextMainErrors).length > 0) {
+    const slugResult = slugSchema.safeParse(slug);
+    if (!slugResult.success) {
+      setSlugError(slugResult.error.issues[0]!.message);
+      if (Object.keys(nextMainErrors).length === 0) {
+        toast.error("Проверьте адрес сайта");
+      }
+    } else {
+      setSlugError(null);
+    }
+    if (Object.keys(nextMainErrors).length > 0 || !slugResult.success) {
       setMainFieldErrors(nextMainErrors);
-      setDrawerOpen(true);
-      toast.error("Заполните имена и дату свадьбы в настройках сайта");
+      if (Object.keys(nextMainErrors).length > 0) {
+        setDrawerOpen(true);
+        toast.error("Заполните имена и дату свадьбы в настройках сайта");
+      }
       return false;
     }
     setMainFieldErrors({});
 
     try {
       await saveMutation.mutateAsync({
+        slug: slugResult.data,
         groomName,
         brideName,
         weddingDate,
@@ -140,6 +157,10 @@ export function ProjectEditor({
         status,
         blocksConfig,
       });
+      // siteUrl/clientUrl are server-computed props (getSiteUrl reads
+      // APP_BASE_DOMAIN, a non-public env var) — only a real refetch of the
+      // Server Component picks up a changed slug there.
+      if (slugResult.data !== project.slug) router.refresh();
       return true;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Не удалось сохранить изменения");
@@ -188,11 +209,20 @@ export function ProjectEditor({
             <h1 className="text-lg font-semibold text-neutral-900">
               {project.groomName} и {project.brideName}
             </h1>
-            <p className="text-sm text-neutral-500">
-              /{project.slug}
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-neutral-500">
+              <span>/</span>
+              {/* Manual override for exclusivity requests (see feedback) —
+                  DB unique constraint is the real duplicate check, this
+                  input just re-validates the same charset proxy.ts requires
+                  before bothering the server. */}
+              <input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase())}
+                aria-label="Адрес сайта"
+                className="min-h-11 w-48 rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900"
+              />
               {publishedAt && (
                 <>
-                  {" · "}
                   <a
                     href={siteUrl}
                     target="_blank"
@@ -215,7 +245,8 @@ export function ProjectEditor({
                   </a>
                 </>
               )}
-            </p>
+            </div>
+            {slugError && <p className="mt-1 text-xs text-red-600">{slugError}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <select

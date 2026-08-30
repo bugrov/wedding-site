@@ -4,6 +4,7 @@ import type { ProjectStatus } from "@/app/generated/prisma/client";
 import { fetchOrThrow } from "./fetch-or-throw";
 
 export type ProjectSavePayload = {
+  slug: string;
   groomName: string;
   brideName: string;
   weddingDate: string;
@@ -20,7 +21,12 @@ export function useSaveProjectMutation(projectId: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Не удалось сохранить изменения");
+      if (!res.ok) {
+        // Surface the server's actual reason (e.g. a duplicate slug) instead
+        // of a generic message — the operator needs to know which.
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Не удалось сохранить изменения");
+      }
     },
   });
 }

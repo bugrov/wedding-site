@@ -2,10 +2,12 @@ import { z } from "zod";
 import { TEMPLATE_IDS } from "@/lib/templates/registry";
 import { blocksConfigSchema } from "@/lib/blocks";
 import { ProjectStatus } from "@/app/generated/prisma/client";
+import { slugSchema } from "@/lib/schemas/slug";
 
 // The admin project editor's save payload — client-side and re-validated
 // server-side in PATCH /api/admin/projects/[id], same reasoning as leadSchema.
 export const projectUpdateSchema = z.object({
+  slug: slugSchema,
   groomName: z.string().min(1, "Введите имя жениха"),
   brideName: z.string().min(1, "Введите имя невесты"),
   weddingDate: z.coerce.date("Укажите корректную дату"),
