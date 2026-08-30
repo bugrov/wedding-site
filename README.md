@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wedding Press
 
-## Getting Started
+Свадебный сайт-конструктор: лендинг с лид-формой → админка (согласование и оплата) →
+публичный сайт-приглашение на поддомене (`<slug>.<домен>`). Один оператор ведёт заявки
+вручную; пара получает готовый сайт с RSVP-формой и личный кабинет со списком гостей.
 
-First, run the development server:
+## Стек
+
+- **Next.js 16** (App Router, Turbopack), **React 19**, **TypeScript 5** (strict)
+- **Tailwind CSS v4** — CSS-first конфиг в `app/globals.css`, без `tailwind.config.js`
+- **Prisma 7** (`prisma-client` generator, `@prisma/adapter-pg`) + PostgreSQL
+- **TanStack Query**, **React Hook Form + Zod**, **sonner**
+- `output: "standalone"` — self-host на своём VPS через Docker, не Vercel
+
+## Быстрый старт
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+docker compose up -d db          # поднимает Postgres на localhost:5433
+cp .env.example .env             # заполнить DATABASE_URL/TELEGRAM_*/APP_BASE_DOMAIN
+npx prisma migrate dev           # применить миграции
+npm run admin:set-password       # создать первого администратора
+npm run dev                      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Локальные поддомены (`<slug>.lvh.me:3000`) резолвятся сами — `lvh.me` публично указывает
+на `127.0.0.1`, ничего в `/etc/hosts` править не нужно. Опционально:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run seed:demos   # 5 живых демо-сайтов (по одному на шаблон), см. prisma/seed-demos.ts
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Как это устроено
 
-## Learn More
+**Путь одной свадьбы:** гость лендинга оставляет заявку (`Lead`) → оператор в админке
+превращает её в проект (`Project`), дорабатывает контент и вручную отмечает статус (включая
+оплату — сейчас без интеграции с платёжным шлюзом) → отдельным действием публикует сайт на
+`<slug>.<домен>` (публикация не привязана к статусу автоматически) → гости отвечают через
+RSVP-форму → пара следит за списком в личном кабинете по токену (`/client/[token]`, без
+пароля — сама ссылка и есть доступ).
 
-To learn more about Next.js, take a look at the following resources:
+**Один рендерер, пять шаблонов.** `components/page-renderer.tsx` — единственное место,
+которое превращает `blocksConfig` (какие блоки включены, в каком порядке, с каким контентом)
+в реальную страницу. Он используется одинаково в админ-редакторе, в публичном
+конфигураторе на лендинге и на опубликованном сайте — разница только в `previewMode`.
+Каждый шаблон (`components/templates/<template>/`) — это набор рендереров, по одному на
+каждый тип блока из `lib/blocks/schema.ts`, плюс своя тема и декор; контент-схема у всех
+шаблонов общая, отличается только визуальное исполнение. Шаблон регистрируется в
+`lib/templates/registry.ts`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Цвета и шрифты — только через переменные.** Палитра шаблона (`--color-primary`,
+`--color-accent`, `--color-background`, `--color-text`) приходит через `ThemeWrapper`
+каждого шаблона, шрифты — через `--font-display`/`--font-accent`/`--font-body`. Общие
+примитивы (`components/primitives/`: `Section`, `DisplayHeading`, `PhotoGrid` и т.д.)
+никогда не хардкодят цвет/шрифт конкретного шаблона — этим одна и та же вёрстка работает
+под любой темой.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Поддомены** — `proxy.ts` (не `middleware.ts`, переименовано в Next 16) по Host-заголовку
+переписывает `<slug>.<домен>` в `/sites/<slug>`, не трогая базу — реальный запрос к Prisma
+происходит уже в самой странице (`app/sites/[slug]/page.tsx`). Опубликованность гейтится
+полем `publishedAt`, а не `status`: `status` может временно откатиться на «на согласовании»
+для правок уже после публикации, сайт при этом остаётся доступен гостям.
 
-## Deploy on Vercel
+## Структура проекта
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+app/            роуты App Router: admin/*, client/[token], sites/[slug], api/*, dev/*
+components/     admin/, client/, editor/, landing/ — компоненты соответствующих поверхностей
+                primitives/ — общие строительные блоки; templates/<template>/ — сами шаблоны
+lib/            blocks/ (Zod-схемы контента), templates/ (реестр), theme/, hooks/, schemas/,
+                auth/, telegram/, db/
+prisma/         schema.prisma, migrations/, seed.ts (админ), seed-demos.ts (демо-сайты)
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Частые команды
+
+| Команда                                                 | Что делает                                                                                                                                                                                   |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                           | Дев-сервер (Turbopack)                                                                                                                                                                       |
+| `npm run build`                                         | Прод-сборка (`output: standalone`)                                                                                                                                                           |
+| `docker compose up -d --build app`                      | Собрать и запустить прод-версию (`npm run start`/`next start` **не** обслуживает `output: standalone` корректно — нужен именно `node .next/standalone/server.js`, это и делает `Dockerfile`) |
+| `npm run lint` / `npm run format` / `npm run typecheck` | ESLint / Prettier / `tsc --noEmit`                                                                                                                                                           |
+| `npm run admin:set-password`                            | Создать/сбросить пароль администратора                                                                                                                                                       |
+| `npm run seed:demos`                                    | Пересоздать 5 демо-сайтов на живых поддоменах                                                                                                                                                |
+
+## Деплой
+
+Продовая сборка — `Dockerfile` (multi-stage, копирует `.next/standalone` + `.next/static` +
+`public`) и `docker-compose.yml` (сервисы `db` + `app`). Перед реальным доменом на VPS
+дополнительно нужен reverse proxy с wildcard-сертификатом на `*.<домен>` — подробности пока
+не задокументированы, обсуждаются отдельно.
+
+## Документация
+
+- **`CLAUDE.md`** / **`AGENTS.md`** — правила и архитектурные соглашения для работы с кодом
+  (в первую очередь для AI-ассистента, но актуальны и для человека).
+- **`.claude/project-state.md`** — текущее состояние: что сделано, что в работе, какие
+  решения приняты и почему. Читать перед началом крупной задачи.
