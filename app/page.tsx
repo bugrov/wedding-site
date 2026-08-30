@@ -5,6 +5,7 @@ import { LandingHero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Examples } from "@/components/landing/examples";
 import { Configurator } from "@/components/landing/configurator";
+import { Faq } from "@/components/landing/faq";
 import { LandingFooter } from "@/components/landing/footer";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function LandingPage() {
       <HowItWorks />
       <Examples />
       <Configurator />
+      <Faq />
       <LandingFooter />
     </LandingThemeWrapper>
   );
