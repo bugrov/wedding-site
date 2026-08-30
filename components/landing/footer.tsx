@@ -6,6 +6,10 @@ export function LandingFooter() {
           Свяжитесь напрямую: +7 (999) 796-84-38 ·{" "}
           <a href="https://t.me/average_pudge_enjoyer" className="underline underline-offset-4">
             Telegram
+          </a>{" "}
+          ·{" "}
+          <a href="mailto:alex.bugrov.bugrov@yandex.ru" className="underline underline-offset-4">
+            Email
           </a>
         </p>
         <p>
