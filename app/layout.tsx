@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Wedding Site Builder",
+  title: "Wedding Press",
   description: "Внутренний конструктор сайтов-приглашений на свадьбу",
 };
 
