@@ -23,9 +23,13 @@ export async function generateMetadata({
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
   const { token } = await params;
+  // noindex on both branches: this page's URL token *is* the access
+  // credential (see comment above) and lists real guest data — must never
+  // be crawlable or appear in search results.
+  const robots = { index: false, follow: false };
   const project = await getProjectByToken(token);
-  if (!project) return { title: "Не найдено" };
-  return { title: `Гости — ${project.groomName} и ${project.brideName}` };
+  if (!project) return { title: "Не найдено", robots };
+  return { title: `Гости — ${project.groomName} и ${project.brideName}`, robots };
 }
 
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" });

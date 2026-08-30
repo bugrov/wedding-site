@@ -24,6 +24,18 @@ const nextConfig: NextConfig = {
     // image URLs, but worth remembering if this ever needs tightening.
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
+  // Defense-in-depth alongside the per-page `robots` metadata and
+  // app/robots.ts: an HTTP header is honored even if a crawler ignores or
+  // fails to parse the <meta> tag. Covers /sites/<slug> both via the
+  // subdomain rewrite (proxy.ts) and direct access on the main domain.
+  async headers() {
+    const noindex = { key: "X-Robots-Tag", value: "noindex, nofollow" };
+    return [
+      { source: "/sites/:path*", headers: [noindex] },
+      { source: "/client/:path*", headers: [noindex] },
+      { source: "/admin/:path*", headers: [noindex] },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -29,10 +29,16 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  // noindex on both branches: a private invitation (real names, date, guest
+  // RSVPs) should never surface in search, whether or not the slug resolves.
+  const robots = { index: false, follow: false };
   const project = await getPublishedProject(slug);
-  if (!project) return { title: "Приглашение не найдено" };
+  if (!project) return { title: "Приглашение не найдено", robots };
 
-  return { title: `Приглашение на свадьбу — ${project.groomName} и ${project.brideName}` };
+  return {
+    title: `Приглашение на свадьбу — ${project.groomName} и ${project.brideName}`,
+    robots,
+  };
 }
 
 // Rewrite target for `<slug>.<APP_BASE_DOMAIN>` (see proxy.ts) — also
