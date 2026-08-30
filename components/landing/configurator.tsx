@@ -164,39 +164,47 @@ export function Configurator() {
         </BodyText>
       </Section>
 
-      <BlockSettingsDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        enabledBlocks={enabledBlocks}
-        onToggleBlock={toggleBlock}
-        templateId={templateId}
-        onTemplateChange={setTemplateId}
-        coverContent={coverContent}
-        onCoverChange={setCoverContent}
-        content={content}
-        onContentChange={updateContent}
-        features={features}
-        onFeaturesChange={setFeatures}
-        groomName={groomName}
-        onGroomNameChange={setGroomName}
-        brideName={brideName}
-        onBrideNameChange={setBrideName}
-        weddingDate={weddingDate}
-        onWeddingDateChange={setWeddingDate}
-        mainFieldErrors={mainFieldErrors}
-      />
-
-      {/* Full-page site preview — the real PageRenderer output at its
-          natural width, not boxed/scaled down (see feedback: a bordered
-          "window in window" preview was bad UX; this should look like the
-          actual site). */}
-      <div className="border-y border-black/10">
-        <PageRenderer
+      {/* Shared containing block for the sticky "Настроить блоки" button and
+          the preview it controls — sticky releases at its own parent's
+          bottom edge, so without this shared wrapper the button's real
+          containing block was the whole page (Fragment siblings don't
+          count), and it stayed stuck well past the preview, overlapping the
+          lead form below on mobile (see feedback). */}
+      <div>
+        <BlockSettingsDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          enabledBlocks={enabledBlocks}
+          onToggleBlock={toggleBlock}
           templateId={templateId}
-          project={previewProject}
-          blocksConfig={blocksConfig}
-          previewMode
+          onTemplateChange={setTemplateId}
+          coverContent={coverContent}
+          onCoverChange={setCoverContent}
+          content={content}
+          onContentChange={updateContent}
+          features={features}
+          onFeaturesChange={setFeatures}
+          groomName={groomName}
+          onGroomNameChange={setGroomName}
+          brideName={brideName}
+          onBrideNameChange={setBrideName}
+          weddingDate={weddingDate}
+          onWeddingDateChange={setWeddingDate}
+          mainFieldErrors={mainFieldErrors}
         />
+
+        {/* Full-page site preview — the real PageRenderer output at its
+            natural width, not boxed/scaled down (see feedback: a bordered
+            "window in window" preview was bad UX; this should look like the
+            actual site). */}
+        <div className="border-y border-black/10">
+          <PageRenderer
+            templateId={templateId}
+            project={previewProject}
+            blocksConfig={blocksConfig}
+            previewMode
+          />
+        </div>
       </div>
 
       <Section bleed="contained">
