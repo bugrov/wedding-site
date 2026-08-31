@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,11 @@ import { TEMPLATE_IDS } from "@/lib/templates/registry";
 import { PageRenderer } from "@/components/page-renderer";
 import { leadSchema } from "@/lib/schemas/lead";
 import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primitives";
+import {
+  readConfiguratorDraft,
+  saveConfiguratorDraft,
+  clearConfiguratorDraft,
+} from "@/lib/configurator-draft";
 import { BlockSettingsDrawer } from "./block-settings-drawer";
 
 // Fallback demo names/date for the live preview when the visitor hasn't
@@ -67,6 +72,49 @@ export function Configurator() {
   const [content, setContent] =
     useState<{ [K in BlockType]: BlockContent<K> }>(DEFAULT_BLOCK_CONTENT);
   const [features, setFeatures] = useState<BlockFeatures>(DEFAULT_BLOCK_FEATURES);
+  const [draftReady, setDraftReady] = useState(false);
+
+  // Restores whatever the visitor had filled in before an accidental tab
+  // close / navigation (see feedback: "случайно закрыл, все заново
+  // вводить, неудобно") — there's no account at this stage, so the
+  // browser's own localStorage is the only place a pre-submission draft can
+  // live. Has to run in an effect, not a lazy useState initializer: the
+  // server render (and the client's first render before hydration) has no
+  // localStorage, so seeding state from it any earlier would mismatch the
+  // SSR'd HTML. setDraftReady(true) gates the save effect below so it can't
+  // fire on this same pass with the pre-restore defaults and clobber the
+  // very draft being restored (both effects' setState calls from this
+  // render are batched into one commit either way).
+  /* eslint-disable react-hooks/set-state-in-effect -- see comment above */
+  useEffect(() => {
+    const draft = readConfiguratorDraft();
+    if (draft) {
+      if (draft.templateId) setTemplateId(draft.templateId);
+      if (draft.enabledBlocks) setEnabledBlocks(draft.enabledBlocks);
+      if (draft.coverContent) setCoverContent(draft.coverContent);
+      if (draft.groomName) setGroomName(draft.groomName);
+      if (draft.brideName) setBrideName(draft.brideName);
+      if (draft.weddingDate) setWeddingDate(draft.weddingDate);
+      if (draft.content) setContent((current) => ({ ...current, ...draft.content }));
+      if (draft.features) setFeatures((current) => ({ ...current, ...draft.features }));
+    }
+    setDraftReady(true);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!draftReady) return;
+    saveConfiguratorDraft({
+      templateId,
+      enabledBlocks,
+      coverContent,
+      groomName,
+      brideName,
+      weddingDate,
+      content,
+      features,
+    });
+  }, [draftReady, templateId, enabledBlocks, coverContent, groomName, brideName, weddingDate, content, features]);
 
   const {
     register,
@@ -145,6 +193,7 @@ export function Configurator() {
     }
 
     toast.success("Заявка принята! Мы свяжемся с вами в Telegram или по телефону.");
+    clearConfiguratorDraft();
     reset();
     setGroomName(FALLBACK_GROOM_NAME);
     setBrideName(FALLBACK_BRIDE_NAME);

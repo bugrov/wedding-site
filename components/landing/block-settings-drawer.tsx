@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import {
   BLOCK_TYPES,
@@ -107,15 +107,45 @@ export function BlockSettingsDrawer({
   mainFieldErrors: MainFieldErrors;
 }) {
   const [expandedBlock, setExpandedBlock] = useState<BlockType | null>(null);
+  const pushedHistoryRef = useRef(false);
+
+  // Mobile back-button support: opening the drawer pushes a throwaway
+  // history entry so a hardware/gesture "back" closes the drawer instead of
+  // leaving the whole configurator page (see feedback: "если в телефоне
+  // нажать кнопку назад, то попап не закроется, а закроется вкладка").
+  useEffect(() => {
+    if (!open) return;
+    window.history.pushState({ configuratorDrawer: true }, "");
+    pushedHistoryRef.current = true;
+    const onPopState = () => {
+      pushedHistoryRef.current = false;
+      onOpenChange(false);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Closing any other way (X, overlay click, Escape) has to consume that
+  // same pushed entry itself, via history.back() — otherwise it's left
+  // dangling, and the next real "back" press would silently just remove it
+  // instead of leaving the page, requiring a second press.
+  const close = useCallback(() => {
+    if (pushedHistoryRef.current) {
+      pushedHistoryRef.current = false;
+      window.history.back();
+    }
+    onOpenChange(false);
+  }, [onOpenChange]);
 
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenChange(false);
+      if (e.key === "Escape") close();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, onOpenChange]);
+  }, [open, close]);
 
   return (
     <>
@@ -140,13 +170,7 @@ export function BlockSettingsDrawer({
         </button>
       </div>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/30"
-          onClick={() => onOpenChange(false)}
-          aria-hidden
-        />
-      )}
+      {open && <div className="fixed inset-0 z-[60] bg-black/30" onClick={close} aria-hidden />}
 
       <aside
         role="dialog"
@@ -156,23 +180,23 @@ export function BlockSettingsDrawer({
         // sat behind the overlay but above the drawer's content — same
         // z-index falls back to DOM order, which happened to favor the
         // toggle. Higher than every in-page fixed element settles it outright.
-        className="fixed top-0 right-0 z-[60] h-full w-full max-w-sm transform overflow-y-auto bg-white shadow-2xl transition-transform duration-300 md:max-w-lg"
+        className="fixed top-0 right-0 z-[60] flex h-full w-full max-w-sm transform flex-col bg-white shadow-2xl transition-transform duration-300 md:max-w-lg"
         style={{ transform: open ? "translateX(0)" : "translateX(100%)" }}
         aria-hidden={!open}
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-6 py-4">
+        <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
           <h2 className="text-sm font-semibold tracking-wide uppercase">Настройки сайта</h2>
           <button
             type="button"
-            onClick={() => onOpenChange(false)}
+            onClick={close}
             aria-label="Закрыть"
-            className="rounded-full p-2 hover:bg-black/5"
+            className="rounded-full bg-black p-2 text-white hover:opacity-90"
           >
             <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
 
-        <div className="space-y-8 px-6 py-6">
+        <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
           <div>
             <h3 className="text-sm font-semibold tracking-wide uppercase">Основное</h3>
             <div className="mt-3 space-y-4">
@@ -328,6 +352,22 @@ export function BlockSettingsDrawer({
               <FeaturesForm value={features} onChange={onFeaturesChange} />
             </div>
           </div>
+        </div>
+
+        {/* Pinned to the bottom of the drawer, always visible regardless of
+            scroll position — doesn't actually save anything on its own
+            (everything above already saves itself as it's typed: state +
+            the localStorage draft), this is purely a second, obvious way
+            out of the drawer next to the small X up top (see feedback: the
+            X alone read as too easy to miss). */}
+        <div className="border-t border-black/10 px-6 py-4">
+          <button
+            type="button"
+            onClick={close}
+            className="min-h-11 w-full rounded-full bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
+          >
+            Сохранить
+          </button>
         </div>
       </aside>
     </>
