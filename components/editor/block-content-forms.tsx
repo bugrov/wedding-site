@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Trash2, ImageOff, ExternalLink } from "lucide-react";
+import { useRef, useState } from "react";
+import { Plus, Trash2, ImageOff, ExternalLink, Upload, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import type { CoverContent, BlockContent, BlockFeatures } from "@/lib/blocks";
+import { usePhotoUploadMutation } from "@/lib/hooks/use-photo-upload-mutation";
 import { cn } from "@/lib/utils";
 
 // Shared by every per-block form below, and (once step 6 builds it) the
@@ -96,6 +98,50 @@ function PhotoThumbnail({
 const photoUrlFailHint =
   "Нужна прямая ссылка на файл — правой кнопкой на фото → «Копировать адрес изображения».";
 
+// Uploads straight to our object storage and hands back a public URL — sits
+// next to the manual URL input as an alternative way to fill the same field,
+// so pasting a link (e.g. from Unsplash) still works exactly as before.
+function UploadPhotoButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const upload = usePhotoUploadMutation();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    upload.mutate(file, {
+      onSuccess: onUploaded,
+      onError: (err) => toast.error(err instanceof Error ? err.message : "Не удалось загрузить фото."),
+    });
+  };
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        onChange={handleChange}
+        className="sr-only"
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={upload.isPending}
+        aria-label="Загрузить фото с устройства"
+        title="Загрузить фото с устройства"
+        className={cn(removeButtonClassName, "disabled:opacity-50")}
+      >
+        {upload.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+        ) : (
+          <Upload className="h-4 w-4" aria-hidden />
+        )}
+      </button>
+    </>
+  );
+}
+
 function PhotoUrlField({
   label,
   value,
@@ -117,14 +163,10 @@ function PhotoUrlField({
           placeholder="https://..."
           className={`${fieldClassName} mt-0`}
         />
-        {value && (
-          <PhotoThumbnail
-            key={value}
-            src={value}
-            onLoadStateChange={setFailed}
-            className="self-end sm:self-auto"
-          />
-        )}
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <UploadPhotoButton onUploaded={onChange} />
+          {value && <PhotoThumbnail key={value} src={value} onLoadStateChange={setFailed} />}
+        </div>
       </div>
       {value && failed && <p className="mt-1 text-xs text-red-600">{photoUrlFailHint}</p>}
     </div>
@@ -441,6 +483,7 @@ function PhotoRow({
           className={fieldClassName}
         />
         <div className="flex items-center gap-2 self-end sm:mt-1 sm:self-auto">
+          <UploadPhotoButton onUploaded={onChange} />
           {photo && <PhotoThumbnail key={photo} src={photo} onLoadStateChange={setFailed} />}
           <button
             type="button"
