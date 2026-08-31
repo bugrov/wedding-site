@@ -52,16 +52,20 @@ export function PageRenderer({
 
   return (
     <ThemeWrapper colorTokens={colorTokens}>
+      {/* Every real site gets the envelope, not just projects with music on
+          — it started as purely a way to force a real tap/click gesture
+          before browsers allow audio-with-sound, but it's a nice enough
+          reveal moment on its own that gating it behind features.music was
+          needlessly withholding it (see feedback: "зачем их лишать такой
+          фишки, просто декоративной даже"). Never in previewMode (admin
+          editor / public configurator) — a full-screen tap-to-enter gate
+          makes sense for a real guest's first visit, not for someone
+          actively editing the site who'd have to tap through it on every
+          reload (see feedback: "на конфигураторе нам не нужен конверт, он
+          блочит весь ui"). */}
+      {!previewMode && <InvitationGate />}
       {blocksConfig.features.music && (
-        <>
-          {/* Never in previewMode (admin editor / public configurator) — a
-              full-screen tap-to-enter gate makes sense for a real guest's
-              first visit, not for someone actively editing the site who'd
-              have to tap through it on every reload (see feedback: "на
-              конфигураторе нам не нужен конверт, он блочит весь ui"). */}
-          {!previewMode && <InvitationGate />}
-          <MusicToggle src={blocksConfig.features.musicUrl || DEFAULT_BACKGROUND_MUSIC_SRC} />
-        </>
+        <MusicToggle src={blocksConfig.features.musicUrl || DEFAULT_BACKGROUND_MUSIC_SRC} />
       )}
       <Cover project={project} content={blocksConfig.cover} />
       {enabledOrder.map((type) => {
