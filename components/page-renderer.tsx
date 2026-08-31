@@ -3,6 +3,7 @@ import type { ProjectSummary } from "@/lib/templates/types";
 import type { BlocksConfig } from "@/lib/blocks";
 import type { ColorTokens } from "@/lib/theme/tokens";
 import { MusicToggle } from "@/components/music-toggle";
+import { InvitationGateEnvelope as InvitationGate } from "@/components/invitation-gate-envelope";
 import { DEFAULT_BACKGROUND_MUSIC_SRC } from "@/lib/audio/default-track";
 
 /**
@@ -52,7 +53,15 @@ export function PageRenderer({
   return (
     <ThemeWrapper colorTokens={colorTokens}>
       {blocksConfig.features.music && (
-        <MusicToggle src={blocksConfig.features.musicUrl || DEFAULT_BACKGROUND_MUSIC_SRC} />
+        <>
+          {/* Never in previewMode (admin editor / public configurator) — a
+              full-screen tap-to-enter gate makes sense for a real guest's
+              first visit, not for someone actively editing the site who'd
+              have to tap through it on every reload (see feedback: "на
+              конфигураторе нам не нужен конверт, он блочит весь ui"). */}
+          {!previewMode && <InvitationGate />}
+          <MusicToggle src={blocksConfig.features.musicUrl || DEFAULT_BACKGROUND_MUSIC_SRC} />
+        </>
       )}
       <Cover project={project} content={blocksConfig.cover} />
       {enabledOrder.map((type) => {
