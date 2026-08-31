@@ -34,6 +34,19 @@ export function OldMoneyCover({ project, content }: CoverProps) {
           className="object-cover"
           sizes="100vw"
         />
+        {content.tagline && (
+          <div
+            className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent pt-12 pb-5"
+            aria-hidden={false}
+          >
+            <p
+              className="mx-auto max-w-xs px-6 text-center text-base break-words text-(--color-background)"
+              style={scriptStyle}
+            >
+              {content.tagline}
+            </p>
+          </div>
+        )}
         <div className="absolute inset-0 flex items-center justify-center p-6">
           <div className="relative aspect-square w-full max-w-[320px]">
             <Image
@@ -74,14 +87,6 @@ export function OldMoneyCover({ project, content }: CoverProps) {
           </div>
         </div>
       </div>
-      {content.tagline && (
-        <p
-          className="mx-auto mt-6 max-w-sm px-6 text-lg break-words text-(--color-text)/80"
-          style={scriptStyle}
-        >
-          {content.tagline}
-        </p>
-      )}
     </Section>
   );
 }
