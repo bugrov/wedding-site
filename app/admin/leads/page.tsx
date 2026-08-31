@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { TEMPLATES } from "@/lib/templates/registry";
 import { LeadStatus } from "@/app/generated/prisma/client";
-import { LeadActions } from "./lead-actions";
+import { LeadActions, DeleteLeadButton } from "./lead-actions";
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   NEW: "Новая",
@@ -97,6 +97,7 @@ export default async function AdminLeadsPage() {
                           Открыть проект
                         </Link>
                       )}
+                      <DeleteLeadButton leadId={lead.id} hasProject={!!lead.project} />
                     </td>
                   </tr>
                 ))}

@@ -71,6 +71,20 @@ export function keyFromPublicUrl(url: string): string | null {
   return url.startsWith(prefix) ? url.slice(prefix.length) : null;
 }
 
+// Pulls every one-of-our-bucket URL out of arbitrary JSON text (a
+// blocksConfig dump) — used where a whole Lead/Project is being deleted and
+// every photo/track it referenced needs to be considered for cleanup, not
+// just one known field. Regex over the stringified JSON rather than walking
+// the content schema field-by-field: photo/music URLs are scattered across
+// several block types (cover, gallery, features...) and this doesn't need
+// updating every time a new one is added.
+export function extractPublicUrls(text: string): string[] {
+  if (!publicUrl) return [];
+  const prefix = `${publicUrl.replace(/\/$/, "")}/`;
+  const pattern = new RegExp(`${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[^"\\\\]+`, "g");
+  return [...new Set(text.match(pattern) ?? [])];
+}
+
 // Best-effort: a failed delete shouldn't surface to whoever's replacing a
 // photo/track in the editor, it just means a harmless orphan lingers a
 // little longer.
