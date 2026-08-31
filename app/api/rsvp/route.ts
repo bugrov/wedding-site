@@ -58,13 +58,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Форма пока недоступна" }, { status: 403 });
   }
 
-  // Soft dedup, no personalized links yet (see plan): a case/whitespace
-  // -insensitive name match against this project's existing responses is
-  // treated as "changed their mind" (update) rather than a new guest.
+  // Always creates a new response, never updates an existing one — matching
+  // by name risked silently overwriting a different guest who happens to
+  // share a name (see feedback). A guest resubmitting to fix a typo just
+  // produces a second row; the couple reconciles duplicates in their
+  // dashboard. Real fix is personalized per-guest links (see plan), not
+  // implemented yet.
   const normalizedName = data.name.trim().replace(/\s+/g, " ");
-  const existing = await prisma.rsvpResponse.findFirst({
-    where: { projectId: data.projectId, name: { equals: normalizedName, mode: "insensitive" } },
-  });
 
   // A named pair always counts as at least 2, regardless of what the guest
   // typed into headcount — that field and plusOneName are two separate
@@ -85,15 +85,11 @@ export async function POST(request: Request) {
     comment: data.comment || null,
   };
 
-  if (existing) {
-    await prisma.rsvpResponse.update({ where: { id: existing.id }, data: responseData });
-  } else {
-    await prisma.rsvpResponse.create({ data: responseData });
-  }
+  await prisma.rsvpResponse.create({ data: responseData });
 
   if (project.telegramChatId) {
     const lines = [
-      `${existing ? "Отклик обновлён" : "Новый отклик"}: ${normalizedName}`,
+      `Новый отклик: ${normalizedName}`,
       data.attending ? `Придёт, кол-во: ${headcount}` : "Не сможет прийти",
       data.plusOneName ? `Пара: ${data.plusOneName}` : null,
       data.foodPref ? `Питание: ${data.foodPref}` : null,
