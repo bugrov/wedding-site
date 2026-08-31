@@ -26,7 +26,15 @@ export function MusicToggle({ src, className }: { src: string; className?: strin
     audio.muted = true;
     audio.play().catch(() => {});
 
-    const events = ["click", "touchstart", "keydown"] as const;
+    // touchend, not touchstart — touchstart fires the instant a finger
+    // touches the screen, which is also how every scroll gesture begins.
+    // Unmuting there means a plain scroll-to-read flips the icon to "on"
+    // before the browser knows the touch will become a scroll, not a tap —
+    // some mobile browsers then don't honor it as a real gesture, so
+    // playback silently never starts even though the UI says it did (see
+    // feedback: "иконка переходит в состояние вкл, но музыки нет").
+    // touchend is the completed-tap signal instead.
+    const events = ["click", "touchend", "keydown"] as const;
     const unmuteOnFirstInteraction = () => {
       audio.muted = false;
       audio.play().catch(() => {});
