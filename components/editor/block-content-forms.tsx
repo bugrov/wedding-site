@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Plus, Trash2, ImageOff, ExternalLink, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { CoverContent, BlockContent, BlockFeatures } from "@/lib/blocks";
-import { useFileUploadMutation } from "@/lib/hooks/use-file-upload-mutation";
+import { useFileUploadMutation, cleanupUploadedFile } from "@/lib/hooks/use-file-upload-mutation";
 import { cn } from "@/lib/utils";
 
 // Shared by every per-block form below, and (once step 6 builds it) the
@@ -108,10 +108,15 @@ const AUDIO_ACCEPT = "audio/mpeg,audio/mp4,audio/wav,audio/ogg";
 function UploadFileButton({
   accept,
   label,
+  previousUrl,
   onUploaded,
 }: {
   accept: string;
   label: string;
+  // The field's current value, if any — replaced by this upload. Cleaned up
+  // server-side (only if nothing else references it) so re-uploading to
+  // "change my mind" doesn't leave the old file behind forever.
+  previousUrl?: string;
   onUploaded: (url: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -122,7 +127,10 @@ function UploadFileButton({
     e.target.value = "";
     if (!file) return;
     upload.mutate(file, {
-      onSuccess: onUploaded,
+      onSuccess: (url) => {
+        onUploaded(url);
+        if (previousUrl && previousUrl !== url) cleanupUploadedFile(previousUrl);
+      },
       onError: (err) => toast.error(err instanceof Error ? err.message : "Не удалось загрузить файл."),
     });
   };
@@ -173,6 +181,7 @@ function PhotoUrlField({
           <UploadFileButton
             accept={IMAGE_ACCEPT}
             label="Загрузить фото с устройства"
+            previousUrl={value}
             onUploaded={onChange}
           />
           {value && <PhotoThumbnail key={value} src={value} onLoadStateChange={setFailed} />}
@@ -496,6 +505,7 @@ function PhotoRow({
           <UploadFileButton
             accept={IMAGE_ACCEPT}
             label="Загрузить фото с устройства"
+            previousUrl={photo}
             onUploaded={onChange}
           />
           {photo && <PhotoThumbnail key={photo} src={photo} onLoadStateChange={setFailed} />}
@@ -736,6 +746,7 @@ export function FeaturesForm({
             <UploadFileButton
               accept={AUDIO_ACCEPT}
               label="Загрузить трек с устройства"
+              previousUrl={value.musicUrl}
               onUploaded={(musicUrl) => onChange({ ...value, musicUrl })}
             />
           </div>

@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "crypto";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 // Selectel Object Storage (S3-compatible). The S3 API endpoint
 // (S3_ENDPOINT) is for authenticated PUT/GET via the SDK only — anonymous
@@ -60,4 +60,27 @@ export async function uploadFile(buffer: Buffer, contentType: string): Promise<s
   );
 
   return `${publicUrl.replace(/\/$/, "")}/${key}`;
+}
+
+// Extracts the object key from one of our own public URLs — null for
+// anything else (a pasted external link, or garbage), so callers can tell
+// "not ours to manage" from "ours".
+export function keyFromPublicUrl(url: string): string | null {
+  if (!publicUrl) return null;
+  const prefix = `${publicUrl.replace(/\/$/, "")}/`;
+  return url.startsWith(prefix) ? url.slice(prefix.length) : null;
+}
+
+// Best-effort: a failed delete shouldn't surface to whoever's replacing a
+// photo/track in the editor, it just means a harmless orphan lingers a
+// little longer.
+export async function deleteFile(url: string): Promise<void> {
+  const key = keyFromPublicUrl(url);
+  if (!client || !bucket || !key) return;
+
+  try {
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+  } catch {
+    // swallow — see comment above
+  }
 }
