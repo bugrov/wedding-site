@@ -82,13 +82,60 @@ prisma/         schema.prisma, migrations/, seed.ts (админ), seed-demos.ts 
 | `npm run lint` / `npm run format` / `npm run typecheck` | ESLint / Prettier / `tsc --noEmit`                                                                                                                                                           |
 | `npm run admin:set-password`                            | Создать/сбросить пароль администратора                                                                                                                                                       |
 | `npm run seed:demos`                                    | Пересоздать 5 демо-сайтов на живых поддоменах                                                                                                                                                |
+| `scripts/backup-db.sh`                                  | Снять и залить бэкап БД (на сервере — тот же крон каждую ночь, см. «Бэкапы»)                                                                                                                 |
+| `scripts/restore-db.sh <timestamp>`                     | Восстановить БД из бэкапа (на сервере, необратимо, см. «Бэкапы»)                                                                                                                              |
 
 ## Деплой
 
-Продовая сборка — `Dockerfile` (multi-stage, копирует `.next/standalone` + `.next/static` +
-`public`) и `docker-compose.yml` (сервисы `db` + `app`). Перед реальным доменом на VPS
-дополнительно нужен reverse proxy с wildcard-сертификатом на `*.<домен>` — подробности пока
-не задокументированы, обсуждаются отдельно.
+Прод — VPS (Selectel, Ubuntu 24.04), Docker Compose. Продовая сборка — `Dockerfile`
+(multi-stage, копирует `.next/standalone` + `.next/static` + `public`; `prisma generate`
+резолвит `DATABASE_URL` уже на этапе сборки, поэтому нужен `ARG DATABASE_URL`, даже
+несмотря на то что `.env` в `.dockerignore`). `docker-compose.prod.yml` (не тот, что для
+локальной прод-сборки, — отдельный файл) поднимает `db` + `app` + `caddy`: наружу торчит
+только Caddy (80/443), `db`/`app` доступны только во внутренней docker-сети. `Caddyfile`
+сам получает и продлевает сертификаты Let's Encrypt — для основного домена сразу, для
+`<slug>.<домен>` по требованию (on-demand TLS, проверка легитимности имени —
+`/api/caddy-ask`). Код на сервер попадает не через `git clone`, а через `tar`/`ssh` в
+`/opt/wedding-press`; реальный `.env` с секретами существует только на сервере.
+
+## Бэкапы
+
+`scripts/backup-db.sh` — крон на самом VPS (не в приложении: контейнер `app`
+пересобирается при каждом деплое, а крону нужно жить постоянно):
+
+```
+0 3 * * * /opt/wedding-press/scripts/backup-db.sh >> /var/log/wedding-backup.log 2>&1
+```
+
+Каждую ночь скрипт снимает `pg_dump` из контейнера `db`, сжимает gzip'ом и заливает в
+Object Storage (Selectel S3) через `aws-cli`, затем удаляет бэкапы старше 30 дней.
+
+**Бэкапы лежат в отдельном приватном бакете** (`S3_BACKUP_BUCKET`, сейчас
+`wedding-press-backups`) — **никогда** не в одном бакете с публичными фото/музыкой
+(`S3_BUCKET`). У Selectel «публичность» — это свойство всего бакета целиком, а не ACL
+конкретного объекта: файл, залитый с `--acl private` в публичный бакет, всё равно
+публично читается через доменный домен бакета (`selstorage.ru`). Единственный надёжный
+способ держать бэкапы (пароли, RSVP гостей) в приватности — отдельный бакет с доступом
+"Приватный".
+
+На VPS для `aws-cli` нужны те же S3-ключи, что и в `.env` (`~/.aws/credentials`), плюс
+`AWS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt` в скриптах — собственный бандл
+сертификатов `aws-cli` не доверяет цепочке, по которой выпущен сертификат Selectel
+(системный бандл — доверяет).
+
+**Восстановление** — `scripts/restore-db.sh <timestamp>`, например:
+
+```bash
+./scripts/restore-db.sh 2026-08-31_03-00
+```
+
+Скрипт скачивает архив из бакета и накатывает его через `psql` прямо в контейнер `db` —
+**необратимо заменяет все текущие данные**, 5-секундная пауза перед стартом даёт время
+отменить (`Ctrl+C`). Список доступных бэкапов:
+
+```bash
+aws s3 ls s3://wedding-press-backups/ --endpoint-url https://s3.ru-6.storage.selcloud.ru
+```
 
 ## Документация
 
