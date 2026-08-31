@@ -142,7 +142,7 @@ export function BlockSettingsDrawer({
 
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-black/30"
+          className="fixed inset-0 z-[60] bg-black/30"
           onClick={() => onOpenChange(false)}
           aria-hidden
         />
@@ -152,7 +152,11 @@ export function BlockSettingsDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Настройки сайта"
-        className="fixed top-0 right-0 z-50 h-full w-full max-w-sm transform overflow-y-auto bg-white shadow-2xl transition-transform duration-300 md:max-w-lg"
+        // z-[60], not z-50: the live preview's own MusicToggle (fixed, z-50)
+        // sat behind the overlay but above the drawer's content — same
+        // z-index falls back to DOM order, which happened to favor the
+        // toggle. Higher than every in-page fixed element settles it outright.
+        className="fixed top-0 right-0 z-[60] h-full w-full max-w-sm transform overflow-y-auto bg-white shadow-2xl transition-transform duration-300 md:max-w-lg"
         style={{ transform: open ? "translateX(0)" : "translateX(100%)" }}
         aria-hidden={!open}
       >
