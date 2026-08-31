@@ -14,17 +14,33 @@ export type RsvpSubmission = {
   drinkPref?: string;
   plusOneName?: string;
   comment?: string;
+  // Set only on a resubmission after the guest confirmed how to resolve a
+  // same-name match (see use-rsvp-form.ts).
+  resolution?: "update" | "create";
+  existingResponseId?: string;
 };
+
+export type ExistingRsvpSummary = { id: string; attending: boolean; headcount: number };
+
+export type RsvpMutationResult =
+  | { ok: true }
+  | { duplicate: true; existing: ExistingRsvpSummary };
 
 export function useRsvpMutation() {
   return useMutation({
-    mutationFn: async (payload: RsvpSubmission) => {
+    mutationFn: async (payload: RsvpSubmission): Promise<RsvpMutationResult> => {
       const res = await fetchOrThrow("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      if (res.status === 409) {
+        return (await res.json()) as RsvpMutationResult;
+      }
       if (!res.ok) throw new Error("Не удалось отправить ответ. Попробуйте ещё раз.");
+
+      return { ok: true };
     },
   });
 }

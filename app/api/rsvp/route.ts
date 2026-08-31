@@ -58,13 +58,41 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Форма пока недоступна" }, { status: 403 });
   }
 
-  // Always creates a new response, never updates an existing one — matching
-  // by name risked silently overwriting a different guest who happens to
-  // share a name (see feedback). A guest resubmitting to fix a typo just
-  // produces a second row; the couple reconciles duplicates in their
-  // dashboard. Real fix is personalized per-guest links (see plan), not
-  // implemented yet.
+  // Matching by name used to silently decide create-vs-update on the
+  // server's own judgment, which risked overwriting a different guest who
+  // happens to share a name (see feedback). Now the guest decides: a first
+  // attempt with no `resolution` yet that matches an existing name gets a
+  // 409 with that response's summary instead of being saved, and the client
+  // shows a prompt ("update mine" vs "different person") that resubmits
+  // with an explicit resolution. Real fix is personalized per-guest links
+  // (see plan), not implemented yet.
   const normalizedName = data.name.trim().replace(/\s+/g, " ");
+
+  let updateId: string | null = null;
+  if (data.resolution === "update" && data.existingResponseId) {
+    // Re-checked against projectId, not trusted from the client as-is — a
+    // guest on one couple's site shouldn't be able to overwrite a response
+    // on another project just by passing its id.
+    const owned = await prisma.rsvpResponse.findFirst({
+      where: { id: data.existingResponseId, projectId: data.projectId },
+      select: { id: true },
+    });
+    updateId = owned?.id ?? null;
+  } else if (data.resolution !== "create") {
+    const existing = await prisma.rsvpResponse.findFirst({
+      where: { projectId: data.projectId, name: { equals: normalizedName, mode: "insensitive" } },
+      select: { id: true, attending: true, headcount: true },
+    });
+    if (existing) {
+      return NextResponse.json(
+        {
+          duplicate: true,
+          existing: { id: existing.id, attending: existing.attending, headcount: existing.headcount },
+        },
+        { status: 409 },
+      );
+    }
+  }
 
   // A named pair always counts as at least 2, regardless of what the guest
   // typed into headcount — that field and plusOneName are two separate
@@ -85,11 +113,15 @@ export async function POST(request: Request) {
     comment: data.comment || null,
   };
 
-  await prisma.rsvpResponse.create({ data: responseData });
+  if (updateId) {
+    await prisma.rsvpResponse.update({ where: { id: updateId }, data: responseData });
+  } else {
+    await prisma.rsvpResponse.create({ data: responseData });
+  }
 
   if (project.telegramChatId) {
     const lines = [
-      `Новый отклик: ${normalizedName}`,
+      `${updateId ? "Отклик обновлён" : "Новый отклик"}: ${normalizedName}`,
       data.attending ? `Придёт, кол-во: ${headcount}` : "Не сможет прийти",
       data.plusOneName ? `Пара: ${data.plusOneName}` : null,
       data.foodPref ? `Питание: ${data.foodPref}` : null,

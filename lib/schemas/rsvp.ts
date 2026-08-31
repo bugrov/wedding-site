@@ -12,6 +12,11 @@ export const rsvpSchema = z.object({
   drinkPref: z.string().max(500, "Слишком длинный текст").optional(),
   plusOneName: z.string().max(200, "Слишком длинное имя").optional(),
   comment: z.string().max(1000, "Слишком длинный текст").optional(),
+  // Set only on a resubmission after the guest was shown a "someone already
+  // responded under this name" prompt (see app/api/rsvp/route.ts) — absent
+  // on a first attempt, which is what triggers that check in the first place.
+  resolution: z.enum(["update", "create"]).optional(),
+  existingResponseId: z.string().max(50).optional(),
 });
 
 export type RsvpInput = z.infer<typeof rsvpSchema>;
