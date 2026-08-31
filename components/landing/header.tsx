@@ -1,8 +1,12 @@
+import Link from "next/link";
+
 export function LandingHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-(--color-background)/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <span className="text-sm font-semibold tracking-wide uppercase">Wedding Press</span>
+        <Link href="/" className="text-sm font-semibold tracking-wide uppercase">
+          Wedding Press
+        </Link>
         <nav className="hidden items-center gap-6 text-sm sm:flex">
           <a href="#how-it-works" className="hover:text-(--color-accent-text)">
             Как это работает

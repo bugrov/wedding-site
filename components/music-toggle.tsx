@@ -28,41 +28,64 @@ export function MusicToggle({ src, className }: { src: string; className?: strin
 
     // touchend, not touchstart — touchstart fires the instant a finger
     // touches the screen, which is also how every scroll gesture begins.
-    // Unmuting there means a plain scroll-to-read flips the icon to "on"
-    // before the browser knows the touch will become a scroll, not a tap —
-    // some mobile browsers then don't honor it as a real gesture, so
-    // playback silently never starts even though the UI says it did (see
-    // feedback: "иконка переходит в состояние вкл, но музыки нет").
-    // touchend is the completed-tap signal instead.
+    // touchend is the completed-gesture signal instead, but a touchend that
+    // ends a scroll-drag (finger moved significantly, not a discrete tap)
+    // still isn't always honored by mobile browsers as "real" user
+    // activation for audio — play() then silently rejects. The bug this
+    // caused (see feedback: "иконка переходит в состояние вкл, но музыки
+    // нет") was setMuted(false) firing unconditionally regardless of
+    // whether play() actually succeeded. Fixed below: only flip the visible
+    // state once play()'s promise resolves, and only then stop listening —
+    // a failed attempt (scroll-drag touchend, e.g.) leaves the listeners in
+    // place so the next genuine tap/click/key retries instead of the icon
+    // just silently lying about playback.
     const events = ["click", "touchend", "keydown"] as const;
-    const unmuteOnFirstInteraction = () => {
+    const tryUnmute = () => {
       audio.muted = false;
-      audio.play().catch(() => {});
-      setMuted(false);
-      events.forEach((event) => document.removeEventListener(event, unmuteOnFirstInteraction));
+      audio.play().then(
+        () => {
+          setMuted(false);
+          events.forEach((event) => document.removeEventListener(event, tryUnmute));
+        },
+        () => {
+          audio.muted = true;
+        },
+      );
     };
 
-    events.forEach((event) =>
-      document.addEventListener(event, unmuteOnFirstInteraction, { once: true }),
-    );
+    events.forEach((event) => document.addEventListener(event, tryUnmute));
 
     return () => {
-      events.forEach((event) => document.removeEventListener(event, unmuteOnFirstInteraction));
+      events.forEach((event) => document.removeEventListener(event, tryUnmute));
     };
   }, []);
 
   const toggle = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    const next = !muted;
-    audio.muted = next;
-    if (!next) audio.play().catch(() => {});
-    setMuted(next);
+    if (muted) {
+      audio.muted = false;
+      audio.play().then(
+        () => setMuted(false),
+        () => {
+          audio.muted = true;
+        },
+      );
+    } else {
+      audio.muted = true;
+      setMuted(true);
+    }
   };
 
   return (
     <>
-      <audio ref={audioRef} src={src} loop preload="none" />
+      {/* preload="auto", not "none" — the track only renders when the
+          operator has actually turned this feature on for a project, so
+          fetching it eagerly (in the background, from page load) is a
+          deliberate trade — instant sound on the visitor's first gesture
+          instead of a multi-second fetch delay starting only after they've
+          already interacted. */}
+      <audio ref={audioRef} src={src} loop preload="auto" />
       <button
         type="button"
         onClick={toggle}
