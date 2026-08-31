@@ -206,6 +206,14 @@ export function BlockSettingsDrawer({
                   type="date"
                   value={weddingDate}
                   onChange={(e) => onWeddingDateChange(e.target.value)}
+                  // A click anywhere in this wide input can land on any
+                  // segment (day/month/year), not just the leftmost one — if
+                  // it lands past day, typing digits skips day entirely and
+                  // the native value stays "" (looks filled, validates as
+                  // empty). select() on focus always highlights the first
+                  // segment, so typing always starts from day regardless of
+                  // where the field was clicked.
+                  onFocus={(e) => e.currentTarget.select()}
                   className={fieldClassName}
                 />
                 {mainFieldErrors.weddingDate && (

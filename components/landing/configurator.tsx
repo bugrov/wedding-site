@@ -57,8 +57,8 @@ export function Configurator() {
   const [templateId, setTemplateId] = useState(TEMPLATE_IDS[0]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [coverContent, setCoverContent] = useState<CoverContent>({});
-  const [groomName, setGroomName] = useState("");
-  const [brideName, setBrideName] = useState("");
+  const [groomName, setGroomName] = useState(FALLBACK_GROOM_NAME);
+  const [brideName, setBrideName] = useState(FALLBACK_BRIDE_NAME);
   const [weddingDate, setWeddingDate] = useState("");
   const [mainFieldErrors, setMainFieldErrors] = useState<MainFieldErrors>({});
   // Content for every block type is always kept in state (not just enabled
@@ -146,8 +146,8 @@ export function Configurator() {
 
     toast.success("Заявка принята! Мы свяжемся с вами в Telegram или по телефону.");
     reset();
-    setGroomName("");
-    setBrideName("");
+    setGroomName(FALLBACK_GROOM_NAME);
+    setBrideName(FALLBACK_BRIDE_NAME);
     setWeddingDate("");
   };
 
