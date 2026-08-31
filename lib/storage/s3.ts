@@ -20,31 +20,35 @@ const client =
     ? new S3Client({ endpoint, region, credentials: { accessKeyId, secretAccessKey } })
     : null;
 
-// Content-Type -> file extension. Only image types a wedding photo/gallery
-// upload could legitimately be — anything else is rejected before it ever
-// reaches S3.
-const EXTENSION_BY_CONTENT_TYPE: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif",
+// Content-Type -> [file extension, storage folder]. Only types a wedding
+// site could legitimately need (cover/gallery photos, background music) —
+// anything else is rejected before it ever reaches S3.
+const FILE_TYPES: Record<string, { extension: string; folder: string }> = {
+  "image/jpeg": { extension: "jpg", folder: "photos" },
+  "image/png": { extension: "png", folder: "photos" },
+  "image/webp": { extension: "webp", folder: "photos" },
+  "image/gif": { extension: "gif", folder: "photos" },
+  "audio/mpeg": { extension: "mp3", folder: "music" },
+  "audio/mp4": { extension: "m4a", folder: "music" },
+  "audio/wav": { extension: "wav", folder: "music" },
+  "audio/ogg": { extension: "ogg", folder: "music" },
 };
 
 export function isUploadConfigured(): boolean {
   return client !== null && !!bucket && !!publicUrl;
 }
 
-export function extensionForContentType(contentType: string): string | null {
-  return EXTENSION_BY_CONTENT_TYPE[contentType] ?? null;
+export function isSupportedContentType(contentType: string): boolean {
+  return contentType in FILE_TYPES;
 }
 
-export async function uploadPhoto(buffer: Buffer, contentType: string): Promise<string> {
+export async function uploadFile(buffer: Buffer, contentType: string): Promise<string> {
   if (!client || !bucket || !publicUrl) throw new Error("Object storage is not configured");
 
-  const extension = extensionForContentType(contentType);
-  if (!extension) throw new Error(`Unsupported content type: ${contentType}`);
+  const fileType = FILE_TYPES[contentType];
+  if (!fileType) throw new Error(`Unsupported content type: ${contentType}`);
 
-  const key = `photos/${randomUUID()}.${extension}`;
+  const key = `${fileType.folder}/${randomUUID()}.${fileType.extension}`;
   await client.send(
     new PutObjectCommand({
       Bucket: bucket,

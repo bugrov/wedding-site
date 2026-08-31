@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Plus, Trash2, ImageOff, ExternalLink, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { CoverContent, BlockContent, BlockFeatures } from "@/lib/blocks";
-import { usePhotoUploadMutation } from "@/lib/hooks/use-photo-upload-mutation";
+import { useFileUploadMutation } from "@/lib/hooks/use-file-upload-mutation";
 import { cn } from "@/lib/utils";
 
 // Shared by every per-block form below, and (once step 6 builds it) the
@@ -98,12 +98,24 @@ function PhotoThumbnail({
 const photoUrlFailHint =
   "Нужна прямая ссылка на файл — правой кнопкой на фото → «Копировать адрес изображения».";
 
+const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
+const AUDIO_ACCEPT = "audio/mpeg,audio/mp4,audio/wav,audio/ogg";
+
 // Uploads straight to our object storage and hands back a public URL — sits
 // next to the manual URL input as an alternative way to fill the same field,
-// so pasting a link (e.g. from Unsplash) still works exactly as before.
-function UploadPhotoButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+// so pasting a link (e.g. from Unsplash, or an mp3 already hosted elsewhere)
+// still works exactly as before.
+function UploadFileButton({
+  accept,
+  label,
+  onUploaded,
+}: {
+  accept: string;
+  label: string;
+  onUploaded: (url: string) => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const upload = usePhotoUploadMutation();
+  const upload = useFileUploadMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -111,25 +123,19 @@ function UploadPhotoButton({ onUploaded }: { onUploaded: (url: string) => void }
     if (!file) return;
     upload.mutate(file, {
       onSuccess: onUploaded,
-      onError: (err) => toast.error(err instanceof Error ? err.message : "Не удалось загрузить фото."),
+      onError: (err) => toast.error(err instanceof Error ? err.message : "Не удалось загрузить файл."),
     });
   };
 
   return (
     <>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
-        onChange={handleChange}
-        className="sr-only"
-      />
+      <input ref={inputRef} type="file" accept={accept} onChange={handleChange} className="sr-only" />
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={upload.isPending}
-        aria-label="Загрузить фото с устройства"
-        title="Загрузить фото с устройства"
+        aria-label={label}
+        title={label}
         className={cn(removeButtonClassName, "disabled:opacity-50")}
       >
         {upload.isPending ? (
@@ -164,7 +170,11 @@ function PhotoUrlField({
           className={`${fieldClassName} mt-0`}
         />
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          <UploadPhotoButton onUploaded={onChange} />
+          <UploadFileButton
+            accept={IMAGE_ACCEPT}
+            label="Загрузить фото с устройства"
+            onUploaded={onChange}
+          />
           {value && <PhotoThumbnail key={value} src={value} onLoadStateChange={setFailed} />}
         </div>
       </div>
@@ -191,7 +201,7 @@ export function CoverForm({
         />
       </div>
       <PhotoUrlField
-        label="Фото на обложке (ссылка)"
+        label="Фото на обложке (ссылка или загрузка файла)"
         value={value.photoUrl ?? ""}
         onChange={(photoUrl) => onChange({ ...value, photoUrl })}
       />
@@ -483,7 +493,11 @@ function PhotoRow({
           className={fieldClassName}
         />
         <div className="flex items-center gap-2 self-end sm:mt-1 sm:self-auto">
-          <UploadPhotoButton onUploaded={onChange} />
+          <UploadFileButton
+            accept={IMAGE_ACCEPT}
+            label="Загрузить фото с устройства"
+            onUploaded={onChange}
+          />
           {photo && <PhotoThumbnail key={photo} src={photo} onLoadStateChange={setFailed} />}
           <button
             type="button"
@@ -709,13 +723,22 @@ export function FeaturesForm({
       </CheckboxField>
       {value.music && (
         <div>
-          <label className="block text-sm font-medium">Ссылка на mp3 или название трека</label>
-          <input
-            value={value.musicUrl ?? ""}
-            onChange={(e) => onChange({ ...value, musicUrl: e.target.value })}
-            placeholder="Например: Lana Del Rey — Chemtrails Over The Country Club"
-            className={fieldClassName}
-          />
+          <label className="block text-sm font-medium">
+            Трек (ссылка на mp3 или загрузка файла)
+          </label>
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+            <input
+              value={value.musicUrl ?? ""}
+              onChange={(e) => onChange({ ...value, musicUrl: e.target.value })}
+              placeholder="https://..."
+              className={`${fieldClassName} mt-0`}
+            />
+            <UploadFileButton
+              accept={AUDIO_ACCEPT}
+              label="Загрузить трек с устройства"
+              onUploaded={(musicUrl) => onChange({ ...value, musicUrl })}
+            />
+          </div>
         </div>
       )}
     </div>
