@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { rsvpSchema } from "@/lib/schemas/rsvp";
+import { blocksConfigSchema } from "@/lib/blocks";
 import { ProjectStatus } from "@/app/generated/prisma/client";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { checkRateLimit, getClientIp } from "@/lib/auth/rate-limit";
+import { isRsvpClosed } from "@/lib/rsvp-status";
 
 export async function POST(request: Request) {
   // Public, unauthenticated endpoint, and projectId isn't a secret (it's
@@ -41,7 +43,13 @@ export async function POST(request: Request) {
 
   const project = await prisma.project.findUnique({
     where: { id: data.projectId },
-    select: { status: true, publishedAt: true, telegramChatId: true },
+    select: {
+      status: true,
+      publishedAt: true,
+      telegramChatId: true,
+      weddingDate: true,
+      blocksConfig: true,
+    },
   });
 
   // Not just "does this project exist" — an unpublished project shouldn't
@@ -56,6 +64,18 @@ export async function POST(request: Request) {
 
   if (!isPaid) {
     return NextResponse.json({ error: "Форма пока недоступна" }, { status: 403 });
+  }
+
+  // safeParse, not parse — an invalid stored blocksConfig should just mean
+  // "no explicit deadline set" (falls back to the wedding date alone), not
+  // a 500 for the guest.
+  const blocksConfigResult = blocksConfigSchema.safeParse(project.blocksConfig);
+  const deadline = blocksConfigResult.success
+    ? blocksConfigResult.data.content.rsvp?.deadline
+    : undefined;
+
+  if (isRsvpClosed(project.weddingDate, deadline)) {
+    return NextResponse.json({ error: "Приём откликов завершён" }, { status: 403 });
   }
 
   // Matching by name used to silently decide create-vs-update on the
@@ -87,7 +107,11 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           duplicate: true,
-          existing: { id: existing.id, attending: existing.attending, headcount: existing.headcount },
+          existing: {
+            id: existing.id,
+            attending: existing.attending,
+            headcount: existing.headcount,
+          },
         },
         { status: 409 },
       );
