@@ -26,6 +26,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        DATABASE_URL: postgresql://wedding:wedding_dev_password@db:5432/wedding?schema=public
     restart: unless-stopped
     depends_on:
       db:

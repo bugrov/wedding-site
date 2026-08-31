@@ -1,0 +1,30 @@
+{
+	on_demand_tls {
+		ask http://app:3000/api/caddy-ask
+	}
+}
+
+(security) {
+	encode gzip
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+	request_body {
+		max_size 10MB
+	}
+}
+
+wedding-press.ru {
+	import security
+	reverse_proxy app:3000
+}
+
+*.wedding-press.ru {
+	tls {
+		on_demand
+	}
+	import security
+	reverse_proxy app:3000
+}

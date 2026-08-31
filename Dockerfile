@@ -11,6 +11,12 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# .env is dockerignored (secrets shouldn't live in image layers), but
+# prisma.config.ts resolves DATABASE_URL eagerly via env() even for
+# `generate` — pass a real one at build time so that resolution succeeds; no
+# actual DB connection happens during generate.
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 RUN npx prisma generate
 RUN npm run build
 
