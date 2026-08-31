@@ -28,7 +28,12 @@ export function PinkSketchCover({ project, content }: CoverProps) {
         {dateFormatter.format(project.weddingDate)}
       </p>
       {content.tagline && (
-        <p className="mx-auto mt-4 max-w-md text-(--color-text)/80">{content.tagline}</p>
+        <p
+          className="mx-auto mt-4 max-w-md break-words text-(--color-text)/80"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {content.tagline}
+        </p>
       )}
       <div className="relative mx-auto mt-10 max-w-md pl-4">
         <VerticalLabel className="top-1/2 -left-2">Сохраните дату</VerticalLabel>

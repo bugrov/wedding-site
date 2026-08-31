@@ -75,7 +75,12 @@ export function OldMoneyCover({ project, content }: CoverProps) {
         </div>
       </div>
       {content.tagline && (
-        <p className="mx-auto mt-6 max-w-sm px-6 text-(--color-text)/80">{content.tagline}</p>
+        <p
+          className="mx-auto mt-6 max-w-sm px-6 text-lg break-words text-(--color-text)/80"
+          style={scriptStyle}
+        >
+          {content.tagline}
+        </p>
       )}
     </Section>
   );

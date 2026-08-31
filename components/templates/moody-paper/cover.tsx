@@ -40,7 +40,12 @@ export function MoodyPaperCover({ project, content }: CoverProps) {
           {dateFormatter.format(project.weddingDate)}
         </p>
         {content.tagline && (
-          <p className="mx-auto mt-4 max-w-sm text-(--color-text)/80">{content.tagline}</p>
+          <p
+            className="mx-auto mt-4 max-w-sm break-words text-(--color-text)/80"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {content.tagline}
+          </p>
         )}
       </TornCard>
       {hasPhoto && (

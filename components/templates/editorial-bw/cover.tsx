@@ -68,7 +68,13 @@ export function EditorialBwCover({ project, content }: CoverProps) {
           {dateFormatter.format(project.weddingDate)}
         </p>
         {content.tagline && (
-          <p className={cn("mt-4 max-w-md", hasPhoto ? "text-white/80" : "text-(--color-text)/80")}>
+          <p
+            className={cn(
+              "mt-4 max-w-md break-words",
+              hasPhoto ? "text-white/80" : "text-(--color-text)/80",
+            )}
+            style={{ fontFamily: "var(--font-display)" }}
+          >
             {content.tagline}
           </p>
         )}

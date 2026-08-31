@@ -22,7 +22,14 @@ export function TuscanyCover({ project, content }: CoverProps) {
         {project.groomName} &amp; {project.brideName}
       </DisplayHeading>
       <AccentText className="mt-3 block">{dateFormatter.format(project.weddingDate)}</AccentText>
-      {content.tagline && <p className="mt-4 text-(--color-text)/80">{content.tagline}</p>}
+      {content.tagline && (
+        <p
+          className="mx-auto mt-4 max-w-sm break-words text-(--color-text)/80"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {content.tagline}
+        </p>
+      )}
       <div className="mt-6 flex justify-center">
         <BotanicalSprig />
       </div>
