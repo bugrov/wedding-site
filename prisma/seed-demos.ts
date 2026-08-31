@@ -14,18 +14,21 @@ const prisma = new PrismaClient({ adapter });
 // content across all 5, so a visitor can compare templates on the same
 // couple/content instead of being distracted by different photos (see
 // project-state.md Design Decisions — approved by the user before use).
-// Pexels serves each photo under whatever extension its own original upload
-// had (usually .jpeg, occasionally .png) — hardcoding .jpeg 404s for those.
-function pexelsPhoto(id: number, ext: "jpeg" | "png" = "jpeg"): string {
-  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.${ext}?auto=compress&cs=tinysrgb&w=1600`;
-}
+//
+// Originally hotlinked straight from Pexels (see git history) — moved to our
+// own Object Storage bucket after Pexels/Cloudflare started returning 404 to
+// this VPS's IP range specifically (same class of issue as the Telegram API
+// block, not a code bug: confirmed the identical URL 200s from other
+// networks). Self-hosting removes the dependency on a third party's edge
+// behavior toward our specific host entirely, not just this one incident.
+const PHOTO_BASE = `${process.env.S3_PUBLIC_URL}/photos`;
 
-const COVER_PHOTO = pexelsPhoto(31429051); // couple by a waterfall, greenery
+const COVER_PHOTO = `${PHOTO_BASE}/e517616f-c5bc-48c9-9022-ec77aef07927.jpg`; // couple by a waterfall, greenery
 const GALLERY_PHOTOS = [
-  pexelsPhoto(33140490), // portrait by an ivy wall
-  pexelsPhoto(37380420), // couple with bouquet, daylight
-  pexelsPhoto(32392450), // couple on a cobblestone old-town street
-  pexelsPhoto(9093323), // couple by a historic building
+  `${PHOTO_BASE}/6ee17cb5-60e8-42e7-a0e4-0b2b5e4a7251.jpg`, // portrait by an ivy wall
+  `${PHOTO_BASE}/e1417a07-a77d-4d20-9991-de94f4f5b976.jpg`, // couple with bouquet, daylight
+  `${PHOTO_BASE}/d7424b98-3da7-4d14-baf1-8a7a18a0b105.jpg`, // couple on a cobblestone old-town street
+  `${PHOTO_BASE}/da71f73e-266e-48c1-8ccc-22440d2b034a.jpg`, // couple by a historic building
 ];
 
 // Matches the public configurator's own fallback names (FALLBACK_GROOM_NAME/
