@@ -16,7 +16,11 @@ const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
 
 export function TuscanyCover({ project, content }: CoverProps) {
   return (
-    <Section as="header" bleed="contained" className="pb-8 text-center md:pb-12">
+    <Section
+      as="header"
+      bleed="contained"
+      className="flex min-h-dvh flex-col items-stretch justify-center pb-8 text-center md:pb-12"
+    >
       <Eyebrow>Приглашение на свадьбу</Eyebrow>
       <DisplayHeading className="mt-3">
         {project.groomName} &amp; {project.brideName}

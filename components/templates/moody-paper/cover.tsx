@@ -29,27 +29,40 @@ export function MoodyPaperCover({ project, content }: CoverProps) {
   const hasPhoto = content.photoUrl && isRenderableUrl(content.photoUrl);
 
   return (
-    <Section as="header" bleed="full">
-      <TornCard className="text-center">
-        <Eyebrow>Приглашение на свадьбу</Eyebrow>
-        <DisplayHeading className="mt-3 text-3xl leading-tight md:text-5xl">
-          {project.groomName} <AccentText className="not-italic">&amp;</AccentText>{" "}
-          {project.brideName}
-        </DisplayHeading>
-        <p className="mt-3 text-sm tracking-[0.2em] text-(--color-text)/60 uppercase">
-          {dateFormatter.format(project.weddingDate)}
-        </p>
-        {content.tagline && (
-          <p
-            className="mx-auto mt-4 max-w-sm break-words text-(--color-text)/80"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            {content.tagline}
+    <>
+      {/* Its own full-height screen, deliberately — the photo below is a
+          separate block in normal flow, not squeezed into this same
+          min-height. Card content is usually shorter than one viewport, so
+          this reads as generous dark canvas framing it top and bottom
+          (see feedback: wanted full height "even if that means a lot of
+          black above/below" rather than the card and photo sharing one
+          min-height that neither alone could fill). */}
+      <Section
+        as="header"
+        bleed="full"
+        className="flex min-h-dvh flex-col items-center justify-center pt-0!"
+      >
+        <TornCard className="text-center">
+          <Eyebrow>Приглашение на свадьбу</Eyebrow>
+          <DisplayHeading className="mt-3 text-3xl leading-tight md:text-5xl">
+            {project.groomName} <AccentText className="not-italic">&amp;</AccentText>{" "}
+            {project.brideName}
+          </DisplayHeading>
+          <p className="mt-3 text-sm tracking-[0.2em] text-(--color-text)/60 uppercase">
+            {dateFormatter.format(project.weddingDate)}
           </p>
-        )}
-      </TornCard>
+          {content.tagline && (
+            <p
+              className="mx-auto mt-4 max-w-sm break-words text-(--color-text)/80"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              {content.tagline}
+            </p>
+          )}
+        </TornCard>
+      </Section>
       {hasPhoto && (
-        <div className="mt-16 md:mt-24">
+        <div className="w-full">
           <div className="w-full overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -59,15 +72,22 @@ export function MoodyPaperCover({ project, content }: CoverProps) {
               aria-hidden
             />
           </div>
-          <div className="relative aspect-[4/5] w-full overflow-hidden sm:aspect-[16/9]">
-            <Image
-              src={content.photoUrl!}
-              alt=""
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
+          {/* The paper texture itself stays full-bleed (see above) — only
+              the photo is capped, so it doesn't stretch to low quality on
+              ultra-wide screens. The cream fill matches the paper's own
+              tone, so on screens past the cap it reads as a wide paper mat
+              around a centered photo, not a stray gap. */}
+          <div className="w-full bg-(--color-background)">
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-[1600px] overflow-hidden sm:aspect-[16/9]">
+              <Image
+                src={content.photoUrl!}
+                alt=""
+                fill
+                priority
+                className="object-cover"
+                sizes="100vw"
+              />
+            </div>
           </div>
           <div className="-mt-px w-full overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -80,6 +100,6 @@ export function MoodyPaperCover({ project, content }: CoverProps) {
           </div>
         </div>
       )}
-    </Section>
+    </>
   );
 }

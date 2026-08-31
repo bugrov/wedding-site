@@ -25,7 +25,7 @@ export function EditorialBwCover({ project, content }: CoverProps) {
   const hasPhoto = !!content.photoUrl && isRenderableUrl(content.photoUrl);
 
   return (
-    <header className="relative flex min-h-[85vh] flex-col justify-end overflow-hidden">
+    <header className="relative mx-auto flex min-h-dvh max-w-[1600px] flex-col items-stretch justify-end overflow-hidden">
       {hasPhoto ? (
         <Image
           src={content.photoUrl!}

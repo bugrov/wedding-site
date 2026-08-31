@@ -18,7 +18,11 @@ const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
 
 export function PinkSketchCover({ project, content }: CoverProps) {
   return (
-    <Section as="header" bleed="contained" className="text-center">
+    <Section
+      as="header"
+      bleed="contained"
+      className="flex min-h-dvh flex-col items-stretch justify-center text-center"
+    >
       <Eyebrow>Приглашение на свадьбу</Eyebrow>
       <DisplayHeading className="mt-3 text-4xl md:text-6xl">
         {project.groomName} <AccentText className="not-italic">&amp;</AccentText>{" "}
@@ -35,7 +39,7 @@ export function PinkSketchCover({ project, content }: CoverProps) {
           {content.tagline}
         </p>
       )}
-      <div className="relative mx-auto mt-10 max-w-md pl-4">
+      <div className="relative mx-auto mt-10 w-full max-w-md pl-4">
         <VerticalLabel className="top-1/2 -left-2">Сохраните дату</VerticalLabel>
         <div
           className={cn("relative aspect-[4/5] overflow-hidden bg-black/5", PHOTO_FRAME_CLASSNAME)}

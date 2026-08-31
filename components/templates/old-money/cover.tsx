@@ -25,7 +25,7 @@ const scriptStyle = { fontFamily: "var(--font-accent)" } as const;
 export function OldMoneyCover({ project, content }: CoverProps) {
   return (
     <Section as="header" bleed="full" className="py-0 text-center md:py-0">
-      <div className="relative aspect-[3/4] w-full overflow-hidden sm:aspect-[16/10]">
+      <div className="relative mx-auto min-h-dvh w-full max-w-[1600px] overflow-hidden">
         <Image
           src={OLD_MONEY_DECOR.coverBackground}
           alt=""
