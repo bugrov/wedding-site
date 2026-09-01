@@ -11,6 +11,17 @@ const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
   year: "numeric",
 });
 
+// A camera-stamp-style short date, "DD MM YYYY" — the recognizable orange
+// LCD timestamp old point-and-shoot film cameras burned into the corner of
+// every print. Deliberately separate from `dateFormatter` above (which
+// stays the readable long-form date in the body text) — this one is purely
+// the decorative film cue and always renders as plain digits.
+const stampFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
 // Full-bleed travel photography with overlaid text (see plan: "Крупная
 // травел-фотография на всю ширину") — the one signature move for this
 // direction, unlike Tuscany's centered split or Old Money's framed card.
@@ -41,10 +52,27 @@ export function EditorialBwCover({ project, content }: CoverProps) {
         </div>
       )}
       {hasPhoto && (
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
-          aria-hidden
-        />
+        <>
+          {/* Deliberately no grain/light-leak overlay on the cover photo —
+              tried a real stock texture here (see gallery/story for where
+              that treatment stayed), but on the full-bleed hero it read as
+              "too harsh" (feedback: "он слишком едкий"). Plain desaturated
+              photo + the original bottom fade for text legibility. */}
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
+            aria-hidden
+          />
+          <div
+            className="absolute top-6 right-6 text-sm tracking-[0.1em] text-[#FF8A3D] uppercase md:top-8 md:right-8"
+            style={{
+              fontFamily: "var(--font-mono)",
+              textShadow: "0 0 6px rgba(255,120,40,0.7)",
+            }}
+            aria-hidden
+          >
+            {stampFormatter.format(project.weddingDate)}
+          </div>
+        </>
       )}
       <div className="relative p-8 md:p-16">
         <Monogram

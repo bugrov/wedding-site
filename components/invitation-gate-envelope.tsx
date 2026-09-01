@@ -21,8 +21,14 @@ import { useState } from "react";
 // LICENSING: sourced from Vecteezy's free preview tier — shipped ahead of
 // sorting out proper attribution/licensing (see project-state.md Known
 // Issues), a known open item, not an oversight.
-const ENVELOPE_IMAGE = "/images/gate/envelope-seal.png";
-const ENVELOPE_ASPECT = "1514 / 1121";
+//
+// Resized/re-encoded from the original 1514×1121 PNG (1.5MB) down to
+// 640×474 WebP (~16KB) — the gate only ever displays this at `w-[280px]`,
+// so the source was ~5x oversized for its own use before this pass. See
+// feedback: "конверт долго может подгружаться [на первом визите] — есть
+// какие обходы?" — the PNG's size (not proxy/caching) was the bottleneck.
+const ENVELOPE_IMAGE = "/images/gate/envelope-seal.webp";
+const ENVELOPE_ASPECT = "640 / 474";
 
 export function InvitationGateEnvelope() {
   const [closing, setClosing] = useState(false);
@@ -38,6 +44,12 @@ export function InvitationGateEnvelope() {
         if (closing) setHidden(true);
       }}
     >
+      {/* Preload hint — Next.js hoists any <link> rendered here up into
+          <head>, so the browser starts fetching this the moment the
+          document is parsed instead of only after this component's CSS
+          background-image is applied post-hydration. Matters most on a
+          cold first visit, exactly the case from the feedback above. */}
+      <link rel="preload" as="image" href={ENVELOPE_IMAGE} fetchPriority="high" />
       <button
         type="button"
         onClick={() => setClosing(true)}

@@ -31,7 +31,7 @@ export function PageRenderer({
     return null;
   }
 
-  const { Cover, ThemeWrapper, blocks, alternatingBlocks } = template;
+  const { Cover, ThemeWrapper, blocks, alternatingBlocks, alternatingDividers } = template;
   const enabledOrder = blocksConfig.order.filter((type) =>
     blocksConfig.enabledBlocks.includes(type),
   );
@@ -45,6 +45,22 @@ export function PageRenderer({
     for (const type of enabledOrder) {
       if (alternatingBlocks.includes(type)) {
         alternateDarkByType.set(type, position % 2 === 1);
+        position++;
+      }
+    }
+  }
+
+  // Same "position among just the enabled blocks in this list" computation
+  // as alternateDarkByType above, for `dividerDirection` instead of
+  // `alternateDark` — kept as its own map/loop since the two lists
+  // (`alternatingBlocks` vs `alternatingDividers`) are independent per
+  // template and a block can be in one, both, or neither.
+  const dividerDirectionByType = new Map<string, "ltr" | "rtl">();
+  if (alternatingDividers) {
+    let position = 0;
+    for (const type of enabledOrder) {
+      if (alternatingDividers.includes(type)) {
+        dividerDirectionByType.set(type, position % 2 === 1 ? "rtl" : "ltr");
         position++;
       }
     }
@@ -82,6 +98,7 @@ export function PageRenderer({
             previewMode={previewMode}
             coverPhotoUrl={blocksConfig.cover.photoUrl}
             alternateDark={alternateDarkByType.get(type)}
+            dividerDirection={dividerDirectionByType.get(type)}
           />
         );
       })}

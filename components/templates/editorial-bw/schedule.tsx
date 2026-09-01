@@ -2,10 +2,10 @@ import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primiti
 import type { BlockProps } from "@/lib/templates/types";
 import { TrimDivider } from "./decor";
 
-export function EditorialBwSchedule({ content }: BlockProps<"schedule">) {
+export function EditorialBwSchedule({ content, dividerDirection }: BlockProps<"schedule">) {
   return (
     <>
-      <TrimDivider />
+      <TrimDivider direction={dividerDirection} />
       <Section bleed="contained">
         <div className="text-center md:text-left">
           <Eyebrow>Программа дня</Eyebrow>

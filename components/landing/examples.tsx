@@ -23,7 +23,7 @@ const STYLES = [
   },
   {
     name: "Editorial Ч-Б",
-    palette: ["#1A1A1A", "#B5533C", "#E5E0DA"],
+    palette: ["#1C1912", "#D9631E", "#D7D4CC"],
     demoSlug: "demo-editorial-bw",
     preview: "/images/demo-previews/editorial-bw.jpg",
   },

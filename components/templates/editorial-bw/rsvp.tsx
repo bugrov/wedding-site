@@ -17,13 +17,18 @@ const deadlineFormatter = new Intl.DateTimeFormat("ru-RU", {
   month: "long",
 });
 
-export function EditorialBwRsvp({ project, content, previewMode }: BlockProps<"rsvp">) {
+export function EditorialBwRsvp({
+  project,
+  content,
+  previewMode,
+  dividerDirection,
+}: BlockProps<"rsvp">) {
   const { register, errors, isSubmitting, attending, onSubmit } = useRsvpForm(project.id);
   const closed = isRsvpClosed(project.weddingDate, content.deadline);
 
   return (
     <>
-      <TrimDivider />
+      <TrimDivider direction={dividerDirection} />
       <Section bleed="contained" className="text-center">
         {/* A pinned note — the paperclip reads as a letter against the
           grained page background (see plan feedback: the envelope photo

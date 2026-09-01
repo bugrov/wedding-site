@@ -107,7 +107,7 @@ const DEMOS: { slug: string; templateId: string; dresscodePalette: string[] }[] 
   {
     slug: "demo-editorial-bw",
     templateId: "editorial-bw",
-    dresscodePalette: ["#1A1A1A", "#B5533C", "#E5E0DA"],
+    dresscodePalette: ["#1C1912", "#D9631E", "#D7D4CC"],
   },
   {
     slug: "demo-pink-sketch",

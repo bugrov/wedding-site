@@ -17,6 +17,22 @@ export const editorialBwTemplate: TemplateDefinition = {
   ThemeWrapper: EditorialBwThemeWrapper,
   defaultColorTokens: EDITORIAL_BW_DEFAULT_COLORS,
   Cover: EditorialBwCover,
+  // Every block here renders its own `TrimDivider` (see decor.tsx) — listing
+  // all of them means the scroll direction alternates by each divider's
+  // actual on-page position among whichever blocks are currently enabled,
+  // not by a hardcoded per-block-type guess (see feedback: "учти, что блок
+  // может быть удалён — это должно быть динамически").
+  alternatingDividers: [
+    "timer",
+    "story",
+    "schedule",
+    "venue",
+    "dresscode",
+    "gallery",
+    "wishes",
+    "chat",
+    "rsvp",
+  ],
   blocks: {
     timer: EditorialBwTimer,
     story: EditorialBwStory,

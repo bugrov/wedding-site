@@ -5,10 +5,10 @@ import { TrimDivider } from "./decor";
 // Same venue data as every other template — left-aligned on desktop for a
 // magazine-sidebar feel, but same Russian labeling as Tuscany/Old Money
 // (see feedback: no English accent words in this direction).
-export function EditorialBwVenue({ content }: BlockProps<"venue">) {
+export function EditorialBwVenue({ content, dividerDirection }: BlockProps<"venue">) {
   return (
     <>
-      <TrimDivider />
+      <TrimDivider direction={dividerDirection} />
       <Section bleed="contained" className="text-center md:text-left">
         <Eyebrow>Место проведения</Eyebrow>
         <DisplayHeading as="h2" className="mt-3 text-3xl md:text-5xl">

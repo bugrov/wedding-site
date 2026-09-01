@@ -45,6 +45,17 @@ export type BlockProps<T extends BlockType> = {
    * blocks stranded next to each other. Undefined for block types outside
    * that set, or for templates that don't alternate at all. */
   alternateDark?: boolean;
+  /** Same idea as `alternateDark`, computed the same way (position among
+   * just the *enabled* blocks in this template's `alternatingDividers`), but
+   * for a template's decorative scroll-linked strips rather than background
+   * treatment — currently only Editorial Ч-Б's filmstrip `TrimDivider` (see
+   * decor.tsx), alternating which way each one scrolls. A separate field
+   * from `alternateDark` rather than reusing it — the two are unrelated
+   * concerns that happen to share the same "alternate by enabled position"
+   * computation, and a template could plausibly want both at once. Undefined
+   * for block types outside that set, or for templates that don't declare
+   * `alternatingDividers` at all. */
+  dividerDirection?: "ltr" | "rtl";
 };
 
 /**
@@ -75,4 +86,10 @@ export type TemplateDefinition = {
    * same-treatment blocks adjacent. Omit entirely for a template that
    * doesn't alternate. */
   alternatingBlocks?: BlockType[];
+  /** Same mechanism as `alternatingBlocks`, driving `dividerDirection`
+   * instead of `alternateDark` (see BlockProps) — kept as its own list since
+   * which blocks alternate background and which blocks alternate a
+   * decorative scroll direction are independent choices per template. Omit
+   * for a template with no such scroll-linked decoration. */
+  alternatingDividers?: BlockType[];
 };

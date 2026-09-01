@@ -2,10 +2,10 @@ import { Section, Eyebrow, DisplayHeading, BodyText } from "@/components/primiti
 import type { BlockProps } from "@/lib/templates/types";
 import { TrimDivider } from "./decor";
 
-export function EditorialBwChat({ content }: BlockProps<"chat">) {
+export function EditorialBwChat({ content, dividerDirection }: BlockProps<"chat">) {
   return (
     <>
-      <TrimDivider />
+      <TrimDivider direction={dividerDirection} />
       <Section bleed="contained" className="text-center">
         <Eyebrow>Чат для гостей</Eyebrow>
         <DisplayHeading as="h2" className="mt-3 text-3xl md:text-5xl">
