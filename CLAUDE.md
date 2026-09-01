@@ -10,7 +10,8 @@
 - Tailwind CSS v4, CSS-first конфиг (`@import "tailwindcss"` + `@theme inline` в `app/globals.css`) — **нет** `tailwind.config.js`.
 - Prisma 7 с генератором `prisma-client` (не легаси `@prisma/client`) и `@prisma/adapter-pg`. Клиент импортируется из `@/app/generated/prisma/client`.
 - TanStack Query v5, React Hook Form + Zod v4 (`@hookform/resolvers/zod`), `sonner` для тостов.
-- `output: "standalone"` — self-host на своём VPS через Docker, не Vercel.
+- `output: "standalone"` — self-host на своём VPS через Docker, не Vercel
+  (см. §15 «Деплой на прод» — `git push` сюда не деплоит автоматически).
 
 ## 2. Архитектура проекта
 
@@ -106,6 +107,58 @@
 - Тестраннер в проекте не настроен (нет jest/vitest/playwright) — не предполагать наличие тестов и не ссылаться на несуществующие test-команды.
 - ESLint — flat config (`eslint.config.mjs`) на базе `eslint-config-next/core-web-vitals` + `eslint-config-next/typescript` + `eslint-config-prettier`. Не линтить `app/generated/**`, `.next/**`, `.claude/**`.
 - Prettier: 2 пробела, без табов, двойные кавычки, `;` обязательны, trailing comma везде, `printWidth: 100`.
+
+## 15. Деплой на прод
+
+**`git push` сюда НЕ деплоит ничего сам по себе.** Это не Vercel — репозиторий
+приватный, на сервере нет git-клона и деплой-ключа, автодеплоя по вебхуку
+нет. (Легко перепутать с другими проектами того же пользователя, где push в
+`main` действительно триггерит автодеплой на Vercel — это НЕ тот случай.)
+После `git push` прод остаётся на старом коде, пока не прогнан пайплайн ниже
+руками.
+
+- **Инфраструктура**: Selectel VPS `root@135.106.197.113` (Ubuntu 24.04),
+  код на сервере лежит в `/opt/wedding-press` (обычная папка, не git-репо),
+  `docker-compose.prod.yml` (не путать с локальным `docker-compose.yml`) —
+  сервисы `db` + `app` + `caddy`, наружу торчит только Caddy (80/443).
+- **Синк кода** — вручную через `tar` + `scp` + `ssh`, не `git pull`:
+
+  ```bash
+  # Из корня репозитория, локально:
+  tar -czf /tmp/deploy.tar.gz \
+    --exclude=node_modules --exclude=.next --exclude=.git \
+    --exclude=.env --exclude=.env.local \
+    --exclude=.claude --exclude=.agents --exclude=.windsurf \
+    --exclude=app/generated .
+
+  scp /tmp/deploy.tar.gz root@135.106.197.113:/tmp/deploy.tar.gz
+
+  ssh root@135.106.197.113 \
+    "cd /opt/wedding-press && tar -xzf /tmp/deploy.tar.gz && rm /tmp/deploy.tar.gz"
+  ```
+
+- **Пересборка и рестарт** — прод `.env` с реальными секретами (S3, Telegram,
+  пароли БД) живёт только на сервере, не в репозитории:
+
+  ```bash
+  ssh root@135.106.197.113 \
+    "cd /opt/wedding-press && set -a && source .env && set +a && \
+     docker compose -f docker-compose.prod.yml build app"
+
+  ssh root@135.106.197.113 \
+    "cd /opt/wedding-press && set -a && source .env && set +a && \
+     docker compose -f docker-compose.prod.yml up -d app"
+  ```
+
+  `db` и `caddy` обычно уже здоровы и не требуют пересборки — билд/рестарт
+  нужен только сервису `app` для обычного деплоя кода.
+
+- **Проверка после деплоя**: `docker compose -f docker-compose.prod.yml ps`
+  на сервере (все три сервиса `Up`/`healthy`) и `curl` реального домена
+  (`https://wedding-press.ru/...`, при необходимости с `-H "Host:
+  <slug>.wedding-press.ru"` для конкретного опубликованного сайта).
+- Одноразовые скрипты (сиды, миграции) гоняются так же через `ssh` +
+  `docker compose exec app ...`, не через локальное подключение к проду.
 
 ## Project State
 
